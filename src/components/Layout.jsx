@@ -33,10 +33,10 @@ export function Layout({ children, activeTab, onTabChange, onOpenSettings, setti
                         </div>
                         <div>
                             <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent leading-tight">
-                                Coste de Vida Digital
+                                Control de Gastos
                             </h1>
                             <p className="text-sm text-[var(--color-text-secondary)]">
-                                Gestiona tus gastos digitales {currencySymbol && `(${currencySymbol})`}
+                                Visualiza. Filtra. Decide. {currencySymbol && `(${currencySymbol})`}
                             </p>
                         </div>
                     </div>
