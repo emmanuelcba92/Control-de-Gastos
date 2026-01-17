@@ -16,7 +16,8 @@ export function Filters({
     onCategoryChange
 }) {
     const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
+    // Include 5 future years and 4 past years (total 10)
+    const years = Array.from({ length: 10 }, (_, i) => (currentYear + 5) - i);
 
     const months = [
         'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
