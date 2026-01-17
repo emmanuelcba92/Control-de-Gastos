@@ -26,13 +26,13 @@ export function Layout({ children, activeTab, onTabChange, onOpenSettings, setti
         <div className="min-h-screen pb-8">
             {/* Header */}
             <header className="glass-card mx-4 mt-4 mb-6 px-6 py-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shrink-0">
                             💰
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                            <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent leading-tight">
                                 Coste de Vida Digital
                             </h1>
                             <p className="text-sm text-[var(--color-text-secondary)]">
@@ -41,7 +41,7 @@ export function Layout({ children, activeTab, onTabChange, onOpenSettings, setti
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                         {/* User Auth */}
                         {user ? (
                             <div className="flex items-center gap-2 mr-2 bg-[var(--color-bg-tertiary)] rounded-full pl-1 pr-3 py-1">

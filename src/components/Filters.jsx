@@ -38,11 +38,11 @@ export function Filters({
 
     return (
         <div className="glass-card p-4 mb-6">
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-center">
                 {/* Filter Type Toggle */}
-                <div className="flex rounded-lg overflow-hidden border border-[var(--color-border)]">
+                <div className="flex w-full sm:w-auto rounded-lg overflow-hidden border border-[var(--color-border)]">
                     <button
-                        className={`px-4 py-2 text-sm font-medium transition-all ${filterType === 'all'
+                        className={`flex-1 sm:flex-none px-4 py-2 text-sm font-medium transition-all text-center ${filterType === 'all'
                             ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
                             : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                             }`}
@@ -51,7 +51,7 @@ export function Filters({
                         Todos
                     </button>
                     <button
-                        className={`px-4 py-2 text-sm font-medium transition-all ${filterType === 'year'
+                        className={`flex-1 sm:flex-none px-4 py-2 text-sm font-medium transition-all text-center ${filterType === 'year'
                             ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
                             : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                             }`}
@@ -60,7 +60,7 @@ export function Filters({
                         Por Año
                     </button>
                     <button
-                        className={`px-4 py-2 text-sm font-medium transition-all ${filterType === 'month'
+                        className={`flex-1 sm:flex-none px-4 py-2 text-sm font-medium transition-all text-center ${filterType === 'month'
                             ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
                             : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                             }`}
@@ -70,59 +70,61 @@ export function Filters({
                     </button>
                 </div>
 
-                {/* Year Selector */}
-                {(filterType === 'year' || filterType === 'month') && (
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                    {/* Year Selector */}
+                    {(filterType === 'year' || filterType === 'month') && (
+                        <select
+                            className="form-input w-full sm:w-auto min-w-[100px]"
+                            value={year}
+                            onChange={(e) => onYearChange(parseInt(e.target.value))}
+                        >
+                            {years.map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    {/* Month Selector */}
+                    {filterType === 'month' && (
+                        <select
+                            className="form-input w-full sm:w-auto min-w-[130px]"
+                            value={month}
+                            onChange={(e) => onMonthChange(parseInt(e.target.value))}
+                        >
+                            {months.map((m, index) => (
+                                <option key={index} value={index}>{m}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    <div className="h-8 w-px bg-[var(--color-border)] mx-2 hidden sm:block"></div>
+
+                    {/* Payment Method Selector */}
                     <select
-                        className="form-input w-auto min-w-[100px]"
-                        value={year}
-                        onChange={(e) => onYearChange(parseInt(e.target.value))}
+                        className="form-input w-full sm:w-auto min-w-[150px]"
+                        value={selectedMethod}
+                        onChange={(e) => onMethodChange(e.target.value)}
                     >
-                        {years.map(y => (
-                            <option key={y} value={y}>{y}</option>
+                        <option value="all">💳 Todos los métodos</option>
+                        {STANDARD_PAYMENT_METHODS.map(method => (
+                            <option key={method} value={method}>{method}</option>
                         ))}
                     </select>
-                )}
 
-                {/* Month Selector */}
-                {filterType === 'month' && (
-                    <select
-                        className="form-input w-auto min-w-[130px]"
-                        value={month}
-                        onChange={(e) => onMonthChange(parseInt(e.target.value))}
-                    >
-                        {months.map((m, index) => (
-                            <option key={index} value={index}>{m}</option>
-                        ))}
-                    </select>
-                )}
-
-                <div className="h-8 w-px bg-[var(--color-border)] mx-2 hidden sm:block"></div>
-
-                {/* Payment Method Selector */}
-                <select
-                    className="form-input w-auto min-w-[150px]"
-                    value={selectedMethod}
-                    onChange={(e) => onMethodChange(e.target.value)}
-                >
-                    <option value="all">💳 Todos los métodos</option>
-                    {STANDARD_PAYMENT_METHODS.map(method => (
-                        <option key={method} value={method}>{method}</option>
-                    ))}
-                </select>
-
-                {/* Credit Card Selector - Only if Credit Card is selected */}
-                {selectedMethod === 'Tarjeta de crédito' && (
-                    <select
-                        className="form-input w-auto min-w-[150px]"
-                        value={selectedCard}
-                        onChange={(e) => onCardChange(e.target.value)}
-                    >
-                        <option value="all">🏦 Todas las tarjetas</option>
-                        {creditCards.map(card => (
-                            <option key={card} value={card}>{card}</option>
-                        ))}
-                    </select>
-                )}
+                    {/* Credit Card Selector - Only if Credit Card is selected */}
+                    {selectedMethod === 'Tarjeta de crédito' && (
+                        <select
+                            className="form-input w-full sm:w-auto min-w-[150px]"
+                            value={selectedCard}
+                            onChange={(e) => onCardChange(e.target.value)}
+                        >
+                            <option value="all">🏦 Todas las tarjetas</option>
+                            {creditCards.map(card => (
+                                <option key={card} value={card}>{card}</option>
+                            ))}
+                        </select>
+                    )}
+                </div>
             </div>
         </div>
     );
