@@ -66,7 +66,10 @@ export function useExpenses() {
             });
 
             unsubscribePaymentMethods = dbService.subscribeToPaymentMethods(user.uid, (data) => {
-                if (data && data.length > 0) setPaymentMethods(data);
+                if (data && data.length > 0) {
+                    const normalized = data.map(m => typeof m === 'string' ? { name: m, allowsInstallments: false } : m);
+                    setPaymentMethods(normalized);
+                }
             });
 
         } else {
@@ -82,7 +85,10 @@ export function useExpenses() {
                 setSettings(savedSettings);
                 setCreditCards(savedCards);
                 if (savedCategories.length > 0) setCategories(savedCategories);
-                if (savedPaymentMethods.length > 0) setPaymentMethods(savedPaymentMethods);
+                if (savedPaymentMethods.length > 0) {
+                    const normalized = savedPaymentMethods.map(m => typeof m === 'string' ? { name: m, allowsInstallments: false } : m);
+                    setPaymentMethods(normalized);
+                }
             } catch (err) {
                 setError('Error al cargar los gastos');
             } finally {
@@ -174,10 +180,21 @@ export function useExpenses() {
     // Add payment method
     const addPaymentMethod = useCallback((methodData) => {
         // methodData: { name, allowsInstallments }
-        const exists = paymentMethods.some(m => m.name === methodData.name);
+        const normalizedMethod = typeof methodData === 'string' ? { name: methodData, allowsInstallments: false } : methodData;
+
+        const exists = paymentMethods.some(m => m.name === normalizedMethod.name);
         if (exists) return;
 
-        const updated = [...paymentMethods, methodData];
+        const updated = [...paymentMethods, normalizedMethod];
+        setPaymentMethods(updated);
+        if (user) {
+            dbService.savePaymentMethods(user.uid, updated);
+        }
+    }, [paymentMethods, user]);
+
+    // Update payment method (e.g. toggle installments)
+    const updatePaymentMethod = useCallback((name, updates) => {
+        const updated = paymentMethods.map(m => m.name === name ? { ...m, ...updates } : m);
         setPaymentMethods(updated);
         if (user) {
             dbService.savePaymentMethods(user.uid, updated);
@@ -454,6 +471,7 @@ export function useExpenses() {
         removeCreditCard,
         addCategory,
         addPaymentMethod,
+        updatePaymentMethod,
         deleteCategory,
         deletePaymentMethod,
         addExpense,

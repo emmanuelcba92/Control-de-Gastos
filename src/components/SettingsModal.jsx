@@ -17,6 +17,7 @@ export function SettingsModal({
     onRemoveCreditCard,
     onDeleteCategory,
     onDeletePaymentMethod,
+    onUpdatePaymentMethod,
     onClose
 }) {
     const [formData, setFormData] = useState({
@@ -194,12 +195,21 @@ export function SettingsModal({
                                 const name = typeof m === 'string' ? m : m.name;
                                 return !['Tarjeta de crédito', 'Tarjeta de débito', 'Mercado Crédito', 'Transferencia bancaria', 'Efectivo', 'Otro'].includes(name);
                             }).map(method => {
-                                const name = typeof method === 'string' ? method : method.name;
                                 return (
                                     <div key={name} className="flex items-center justify-between bg-[var(--color-surface)] p-2 px-3 rounded-lg border border-[var(--color-border)]">
-                                        <div className="flex flex-col">
-                                            <span className="text-sm">💳 {name}</span>
-                                            {method.allowsInstallments && <span className="text-[10px] text-indigo-400">Permite cuotas</span>}
+                                        <div className="flex flex-col flex-1">
+                                            <span className="text-sm font-medium">💳 {name}</span>
+                                            <label className="flex items-center gap-2 mt-1 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!method.allowsInstallments}
+                                                    onChange={(e) => onUpdatePaymentMethod(name, { allowsInstallments: e.target.checked })}
+                                                    className="w-3 h-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                <span className="text-[10px] text-[var(--color-text-secondary)] group-hover:text-indigo-400 transition-colors">
+                                                    Permite cuotas
+                                                </span>
+                                            </label>
                                         </div>
                                         <button
                                             type="button"
@@ -211,7 +221,7 @@ export function SettingsModal({
                                                     setError(err.message);
                                                 }
                                             }}
-                                            className="text-red-500 hover:text-red-400 p-1"
+                                            className="text-red-500 hover:text-red-400 p-1 ml-2"
                                             title="Eliminar método"
                                         >
                                             ✕

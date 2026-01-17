@@ -198,6 +198,7 @@ function App() {
           onRemoveCreditCard={removeCreditCard}
           onDeleteCategory={deleteCategory}
           onDeletePaymentMethod={deletePaymentMethod}
+          onUpdatePaymentMethod={updatePaymentMethod}
           onClose={() => setShowSettings(false)}
         />
       )}
