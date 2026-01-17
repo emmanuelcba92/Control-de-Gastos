@@ -1,0 +1,129 @@
+export function Filters({
+    filterType,
+    year,
+    month,
+    onFilterTypeChange,
+    onYearChange,
+    onMonthChange,
+    paymentMethods = [],
+    creditCards = [],
+    selectedMethod = 'all',
+    selectedCard = 'all',
+    onMethodChange,
+    onCardChange
+}) {
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
+
+    const months = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    const STANDARD_PAYMENT_METHODS = [
+        'Tarjeta de crédito',
+        'Tarjeta de débito',
+        'Mercado Pago',
+        'Transferencia bancaria',
+        'Efectivo',
+        'Criptomoneda',
+        'PayPal',
+        'Otro'
+    ];
+
+    // Merge standard methods with any custom ones (though currently implementation uses standard)
+    // or just use the passed unique list + standard ones if needed.
+    // For simplicity, let's use the provided `paymentMethods` if available, or fallback/merge.
+    // Actually, simpler: provide the standard list + 'all'. 
+
+    return (
+        <div className="glass-card p-4 mb-6">
+            <div className="flex flex-wrap items-center gap-4">
+                {/* Filter Type Toggle */}
+                <div className="flex rounded-lg overflow-hidden border border-[var(--color-border)]">
+                    <button
+                        className={`px-4 py-2 text-sm font-medium transition-all ${filterType === 'all'
+                            ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
+                            : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                            }`}
+                        onClick={() => onFilterTypeChange('all')}
+                    >
+                        Todos
+                    </button>
+                    <button
+                        className={`px-4 py-2 text-sm font-medium transition-all ${filterType === 'year'
+                            ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
+                            : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                            }`}
+                        onClick={() => onFilterTypeChange('year')}
+                    >
+                        Por Año
+                    </button>
+                    <button
+                        className={`px-4 py-2 text-sm font-medium transition-all ${filterType === 'month'
+                            ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
+                            : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                            }`}
+                        onClick={() => onFilterTypeChange('month')}
+                    >
+                        Por Mes
+                    </button>
+                </div>
+
+                {/* Year Selector */}
+                {(filterType === 'year' || filterType === 'month') && (
+                    <select
+                        className="form-input w-auto min-w-[100px]"
+                        value={year}
+                        onChange={(e) => onYearChange(parseInt(e.target.value))}
+                    >
+                        {years.map(y => (
+                            <option key={y} value={y}>{y}</option>
+                        ))}
+                    </select>
+                )}
+
+                {/* Month Selector */}
+                {filterType === 'month' && (
+                    <select
+                        className="form-input w-auto min-w-[130px]"
+                        value={month}
+                        onChange={(e) => onMonthChange(parseInt(e.target.value))}
+                    >
+                        {months.map((m, index) => (
+                            <option key={index} value={index}>{m}</option>
+                        ))}
+                    </select>
+                )}
+
+                <div className="h-8 w-px bg-[var(--color-border)] mx-2 hidden sm:block"></div>
+
+                {/* Payment Method Selector */}
+                <select
+                    className="form-input w-auto min-w-[150px]"
+                    value={selectedMethod}
+                    onChange={(e) => onMethodChange(e.target.value)}
+                >
+                    <option value="all">💳 Todos los métodos</option>
+                    {STANDARD_PAYMENT_METHODS.map(method => (
+                        <option key={method} value={method}>{method}</option>
+                    ))}
+                </select>
+
+                {/* Credit Card Selector - Only if Credit Card is selected */}
+                {selectedMethod === 'Tarjeta de crédito' && (
+                    <select
+                        className="form-input w-auto min-w-[150px]"
+                        value={selectedCard}
+                        onChange={(e) => onCardChange(e.target.value)}
+                    >
+                        <option value="all">🏦 Todas las tarjetas</option>
+                        {creditCards.map(card => (
+                            <option key={card} value={card}>{card}</option>
+                        ))}
+                    </select>
+                )}
+            </div>
+        </div>
+    );
+}
