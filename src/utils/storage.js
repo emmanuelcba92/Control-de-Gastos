@@ -4,6 +4,8 @@ const STORAGE_KEY = 'coste-vida-digital-expenses';
 const THEME_KEY = 'coste-vida-digital-theme';
 const SETTINGS_KEY = 'coste-vida-digital-settings';
 const CREDIT_CARDS_KEY = 'coste-vida-digital-credit-cards';
+const CATEGORIES_KEY = 'coste-vida-digital-categories';
+const PAYMENT_METHODS_KEY = 'coste-vida-digital-payment-methods';
 
 export const storage = {
     // Get all expenses from localStorage
@@ -97,6 +99,46 @@ export const storage = {
         }
     },
 
+    // Get categories
+    getCategories: () => {
+        try {
+            const data = localStorage.getItem(CATEGORIES_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            return [];
+        }
+    },
+
+    // Save categories
+    saveCategories: (categories) => {
+        try {
+            localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
+            return true;
+        } catch (error) {
+            return false;
+        }
+    },
+
+    // Get payment methods
+    getPaymentMethods: () => {
+        try {
+            const data = localStorage.getItem(PAYMENT_METHODS_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            return [];
+        }
+    },
+
+    // Save payment methods
+    savePaymentMethods: (methods) => {
+        try {
+            localStorage.setItem(PAYMENT_METHODS_KEY, JSON.stringify(methods));
+            return true;
+        } catch (error) {
+            return false;
+        }
+    },
+
     // Export all data
     exportData: () => {
         try {
@@ -104,6 +146,8 @@ export const storage = {
                 expenses: JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'),
                 settings: JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{"salary":0,"currency":"ARS"}'),
                 creditCards: JSON.parse(localStorage.getItem(CREDIT_CARDS_KEY) || '[]'),
+                categories: JSON.parse(localStorage.getItem(CATEGORIES_KEY) || '[]'),
+                paymentMethods: JSON.parse(localStorage.getItem(PAYMENT_METHODS_KEY) || '[]'),
                 theme: localStorage.getItem(THEME_KEY) || 'light',
                 exportDate: new Date().toISOString(),
                 version: '1.0'
@@ -125,6 +169,8 @@ export const storage = {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data.expenses));
             if (data.settings) localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
             if (data.creditCards) localStorage.setItem(CREDIT_CARDS_KEY, JSON.stringify(data.creditCards));
+            if (data.categories) localStorage.setItem(CATEGORIES_KEY, JSON.stringify(data.categories));
+            if (data.paymentMethods) localStorage.setItem(PAYMENT_METHODS_KEY, JSON.stringify(data.paymentMethods));
             if (data.theme) localStorage.setItem(THEME_KEY, data.theme);
 
             return true;

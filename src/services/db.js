@@ -56,8 +56,30 @@ export const dbService = {
         });
     },
 
+    // Guardar categorías personalizadas
+    saveCategories: async (uid, categories) => {
+        await setDoc(doc(db, 'users', uid, 'metadata', 'categories'), { list: categories });
+    },
+
+    subscribeToCategories: (uid, callback) => {
+        return onSnapshot(doc(db, 'users', uid, 'metadata', 'categories'), (doc) => {
+            if (doc.exists()) callback(doc.data().list || []);
+        });
+    },
+
+    // Guardar métodos de pago personalizados
+    savePaymentMethods: async (uid, methods) => {
+        await setDoc(doc(db, 'users', uid, 'metadata', 'payment_methods'), { list: methods });
+    },
+
+    subscribeToPaymentMethods: (uid, callback) => {
+        return onSnapshot(doc(db, 'users', uid, 'metadata', 'payment_methods'), (doc) => {
+            if (doc.exists()) callback(doc.data().list || []);
+        });
+    },
+
     // --- MIGRATION UTILS ---
-    uploadLocalData: async (uid, { expenses, settings, creditCards }) => {
+    uploadLocalData: async (uid, { expenses, settings, creditCards, categories, paymentMethods }) => {
         const batch = writeBatch(db);
 
         // Expenses
@@ -76,6 +98,18 @@ export const dbService = {
         if (creditCards && creditCards.length > 0) {
             const cardsRef = doc(db, 'users', uid, 'metadata', 'credit_cards');
             batch.set(cardsRef, { list: creditCards });
+        }
+
+        // Categories
+        if (categories && categories.length > 0) {
+            const categoriesRef = doc(db, 'users', uid, 'metadata', 'categories');
+            batch.set(categoriesRef, { list: categories });
+        }
+
+        // Payment Methods
+        if (paymentMethods && paymentMethods.length > 0) {
+            const methodsRef = doc(db, 'users', uid, 'metadata', 'payment_methods');
+            batch.set(methodsRef, { list: paymentMethods });
         }
 
         await batch.commit();

@@ -11,6 +11,15 @@ export function useExpenses() {
     const [error, setError] = useState(null);
     const [settings, setSettings] = useState({ salary: 0, currency: 'ARS' });
     const [creditCards, setCreditCards] = useState([]);
+    const [categories, setCategories] = useState(['Suscripción', 'Compra', 'Servicios']);
+    const [paymentMethods, setPaymentMethods] = useState([
+        'Tarjeta de crédito',
+        'Tarjeta de débito',
+        'Mercado Crédito',
+        'Transferencia bancaria',
+        'Efectivo',
+        'Otro'
+    ]);
 
     // --- DATA LOADING ---
     useEffect(() => {
@@ -18,6 +27,8 @@ export function useExpenses() {
         let unsubscribeExpenses = () => { };
         let unsubscribeSettings = () => { };
         let unsubscribeCards = () => { };
+        let unsubscribeCategories = () => { };
+        let unsubscribePaymentMethods = () => { };
 
         if (user) {
             // ONLINE MODE: Subscribe to Firestore
@@ -50,15 +61,27 @@ export function useExpenses() {
                 if (data) setCreditCards(data);
             });
 
+            unsubscribeCategories = dbService.subscribeToCategories(user.uid, (data) => {
+                if (data && data.length > 0) setCategories(data);
+            });
+
+            unsubscribePaymentMethods = dbService.subscribeToPaymentMethods(user.uid, (data) => {
+                if (data && data.length > 0) setPaymentMethods(data);
+            });
+
         } else {
             // OFFLINE MODE: Load from LocalStorage
             try {
-                const savedExpenses = storage.getExpenses();
                 const savedSettings = storage.getSettings();
                 const savedCards = storage.getCreditCards();
+                const savedCategories = storage.getCategories();
+                const savedPaymentMethods = storage.getPaymentMethods();
+
                 setExpenses(savedExpenses);
                 setSettings(savedSettings);
                 setCreditCards(savedCards);
+                if (savedCategories.length > 0) setCategories(savedCategories);
+                if (savedPaymentMethods.length > 0) setPaymentMethods(savedPaymentMethods);
             } catch (err) {
                 setError('Error al cargar los gastos');
             } finally {
@@ -70,6 +93,8 @@ export function useExpenses() {
             unsubscribeExpenses();
             unsubscribeSettings();
             unsubscribeCards();
+            unsubscribeCategories();
+            unsubscribePaymentMethods();
         };
     }, [user]);
 
@@ -94,6 +119,18 @@ export function useExpenses() {
             storage.saveCreditCards(creditCards);
         }
     }, [creditCards, loading, user]);
+
+    useEffect(() => {
+        if (!user && !loading) {
+            storage.saveCategories(categories);
+        }
+    }, [categories, loading, user]);
+
+    useEffect(() => {
+        if (!user && !loading) {
+            storage.savePaymentMethods(paymentMethods);
+        }
+    }, [paymentMethods, loading, user]);
 
     // --- ACTIONS ---
 
@@ -124,19 +161,38 @@ export function useExpenses() {
         }
     }, [creditCards, user]);
 
+    // Add category
+    const addCategory = useCallback((name) => {
+        const updated = [...new Set([...categories, name])];
+        setCategories(updated);
+        if (user) {
+            dbService.saveCategories(user.uid, updated);
+        }
+    }, [categories, user]);
+
+    // Add payment method
+    const addPaymentMethod = useCallback((name) => {
+        const updated = [...new Set([...paymentMethods, name])];
+        setPaymentMethods(updated);
+        if (user) {
+            dbService.savePaymentMethods(user.uid, updated);
+        }
+    }, [paymentMethods, user]);
+
     // Add new expense
     const addExpense = useCallback((expenseData) => {
         const newExpense = {
             id: uuidv4(),
             nombre: expenseData.nombre,
             monto: parseFloat(expenseData.monto),
-            categoria: expenseData.categoria || 'otro',
+            categoria: expenseData.categoria || 'Otro',
             metodo_pago: expenseData.metodo_pago,
             tarjeta_credito: expenseData.tarjeta_credito || null,
             fecha_inicio: expenseData.fecha_inicio,
             fecha_gasto: expenseData.fecha_gasto || expenseData.fecha_inicio,
             cuotas: parseInt(expenseData.cuotas) || 1,
             cuota_actual: parseInt(expenseData.cuota_actual) || 1,
+            is_recurring: !!expenseData.is_recurring,
             createdAt: new Date().toISOString()
         };
 
@@ -155,13 +211,14 @@ export function useExpenses() {
             id,
             nombre: expenseData.nombre,
             monto: parseFloat(expenseData.monto),
-            categoria: expenseData.categoria || 'otro',
+            categoria: expenseData.categoria || 'Otro',
             metodo_pago: expenseData.metodo_pago,
             tarjeta_credito: expenseData.tarjeta_credito || null,
             fecha_inicio: expenseData.fecha_inicio,
             fecha_gasto: expenseData.fecha_gasto || expenseData.fecha_inicio,
             cuotas: parseInt(expenseData.cuotas) || 1,
             cuota_actual: parseInt(expenseData.cuota_actual) || 1,
+            is_recurring: !!expenseData.is_recurring,
             updatedAt: new Date().toISOString()
         };
 
@@ -202,7 +259,7 @@ export function useExpenses() {
             if (filterType === 'month' && month !== null) {
                 // Calculate if active in this month
                 const monthsDiff = (year - startYear) * 12 + (month - startMonth);
-                if (monthsDiff >= 0 && monthsDiff < cuotas) {
+                if (monthsDiff >= 0 && (expense.is_recurring || monthsDiff < cuotas)) {
                     include = true;
                     currentCuota = monthsDiff + 1;
                 }
@@ -210,11 +267,16 @@ export function useExpenses() {
                 // Check if active during this year
                 const yearStart = new Date(year, 0, 1);
                 const yearEnd = new Date(year, 11, 31);
-                const endDate = new Date(startYear, startMonth + cuotas - 1, 1);
                 const expenseStart = new Date(startYear, startMonth, 1);
 
-                if (expenseStart <= yearEnd && endDate >= yearStart) {
-                    include = true;
+                // If recurring and started before end of year, it's included
+                if (expense.is_recurring) {
+                    if (expenseStart <= yearEnd) include = true;
+                } else {
+                    const endDate = new Date(startYear, startMonth + cuotas - 1, 1);
+                    if (expenseStart <= yearEnd && endDate >= yearStart) {
+                        include = true;
+                    }
                 }
             } else {
                 include = true;
@@ -254,7 +316,7 @@ export function useExpenses() {
     const getExpensesByCategory = useCallback((expenseList = expenses) => {
         const grouped = {};
         expenseList.forEach(expense => {
-            const cat = expense.categoria || 'otro';
+            const cat = expense.categoria || 'Otro';
             if (!grouped[cat]) {
                 grouped[cat] = 0;
             }
@@ -287,7 +349,7 @@ export function useExpenses() {
 
             for (let month = 0; month < 12; month++) {
                 const monthsDiff = (year - startYear) * 12 + (month - startMonth);
-                if (monthsDiff >= 0 && monthsDiff < cuotas) {
+                if (monthsDiff >= 0 && (expense.is_recurring || monthsDiff < cuotas)) {
                     monthlyTotals[month] += amount;
                 }
             }
@@ -312,9 +374,13 @@ export function useExpenses() {
         error,
         settings,
         creditCards,
+        categories,
+        paymentMethods,
         updateSettings,
         addCreditCard,
         removeCreditCard,
+        addCategory,
+        addPaymentMethod,
         addExpense,
         updateExpense,
         deleteExpense,

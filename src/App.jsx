@@ -23,9 +23,13 @@ function App() {
     loading,
     settings,
     creditCards,
+    categories,
+    paymentMethods,
     updateSettings,
     addCreditCard,
     removeCreditCard,
+    addCategory,
+    addPaymentMethod,
     addExpense,
     updateExpense,
     deleteExpense,
@@ -115,7 +119,7 @@ function App() {
                 filterType={filterType}
                 year={selectedYear}
                 month={selectedMonth}
-                paymentMethods={Object.keys(expensesByMethod)}
+                paymentMethods={paymentMethods}
                 creditCards={creditCards}
                 selectedMethod={filterMethod}
                 selectedCard={filterCard}
@@ -170,6 +174,10 @@ function App() {
           onCancel={handleCloseForm}
           creditCards={creditCards}
           onAddCreditCard={addCreditCard}
+          categories={categories}
+          paymentMethods={paymentMethods}
+          onAddCategory={addCategory}
+          onAddPaymentMethod={addPaymentMethod}
         />
       )}
 

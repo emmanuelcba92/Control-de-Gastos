@@ -1,43 +1,39 @@
 import { useState } from 'react';
 
-export function ExpenseForm({ expense, onSave, onCancel, creditCards = [], onAddCreditCard }) {
+export function ExpenseForm({
+    expense,
+    onSave,
+    onCancel,
+    creditCards = [],
+    onAddCreditCard,
+    categories = [],
+    paymentMethods = [],
+    onAddCategory,
+    onAddPaymentMethod
+}) {
     const [formData, setFormData] = useState({
         nombre: expense?.nombre || '',
         monto: expense?.monto?.toString() || '',
-        categoria: expense?.categoria || 'suscripcion',
+        categoria: expense?.categoria || (categories[0] || 'Suscripción'),
         metodo_pago: expense?.metodo_pago || '',
         tarjeta_credito: expense?.tarjeta_credito || '',
         fecha_inicio: expense?.fecha_inicio || new Date().toISOString().split('T')[0],
         fecha_gasto: expense?.fecha_gasto || new Date().toISOString().split('T')[0],
         cuotas: expense?.cuotas?.toString() || '1',
-        cuota_actual: expense?.cuota_actual?.toString() || '1'
+        cuota_actual: expense?.cuota_actual?.toString() || '1',
+        is_recurring: expense?.is_recurring || false
     });
 
     const [errors, setErrors] = useState({});
     const [showNewCardInput, setShowNewCardInput] = useState(false);
     const [newCardName, setNewCardName] = useState('');
+    const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [showNewMethodInput, setShowNewMethodInput] = useState(false);
+    const [newMethodName, setNewMethodName] = useState('');
     const [amountType, setAmountType] = useState('quota'); // 'quota' or 'total'
 
-    const categories = [
-        { value: 'suscripcion', label: '🎬 Suscripción (Netflix, Spotify, etc.)' },
-        { value: 'software', label: '💻 Software/IA (ChatGPT, GitHub, etc.)' },
-        { value: 'mercado_credito', label: '🛒 Mercado Crédito' },
-        { value: 'servicios', label: '📱 Servicios Digitales' },
-        { value: 'almacenamiento', label: '☁️ Almacenamiento (iCloud, Drive)' },
-        { value: 'gaming', label: '🎮 Gaming (Xbox, PlayStation, Steam)' },
-        { value: 'otro', label: '📦 Otro' }
-    ];
-
-    const paymentMethods = [
-        'Tarjeta de crédito',
-        'Tarjeta de débito',
-        'PayPal',
-        'Mercado Pago',
-        'Transferencia bancaria',
-        'Efectivo',
-        'Criptomoneda',
-        'Otro'
-    ];
+    // We use the categories and paymentMethods passed via props
 
     const validateForm = () => {
         const newErrors = {};
@@ -106,7 +102,25 @@ export function ExpenseForm({ expense, onSave, onCancel, creditCards = [], onAdd
         }
     };
 
-    const showInstallments = formData.metodo_pago === 'Tarjeta de crédito';
+    const handleAddNewCategory = () => {
+        if (newCategoryName.trim() && onAddCategory) {
+            onAddCategory(newCategoryName.trim());
+            setFormData(prev => ({ ...prev, categoria: newCategoryName.trim() }));
+            setNewCategoryName('');
+            setShowNewCategoryInput(false);
+        }
+    };
+
+    const handleAddNewMethod = () => {
+        if (newMethodName.trim() && onAddPaymentMethod) {
+            onAddPaymentMethod(newMethodName.trim());
+            setFormData(prev => ({ ...prev, metodo_pago: newMethodName.trim() }));
+            setNewMethodName('');
+            setShowNewMethodInput(false);
+        }
+    };
+
+    const showInstallments = formData.metodo_pago === 'Tarjeta de crédito' || formData.metodo_pago === 'Mercado Crédito';
 
     return (
         <div className="modal-overlay" onClick={onCancel}>
@@ -138,16 +152,68 @@ export function ExpenseForm({ expense, onSave, onCancel, creditCards = [], onAdd
                         <label className="block text-sm font-medium mb-2 text-[var(--color-text-secondary)]">
                             Categoría
                         </label>
-                        <select
-                            className="form-input"
-                            value={formData.categoria}
-                            onChange={(e) => handleChange('categoria', e.target.value)}
-                        >
-                            {categories.map(cat => (
-                                <option key={cat.value} value={cat.value}>{cat.label}</option>
-                            ))}
-                        </select>
+                        {!showNewCategoryInput ? (
+                            <div className="flex gap-2">
+                                <select
+                                    className="form-input flex-1"
+                                    value={formData.categoria}
+                                    onChange={(e) => {
+                                        if (e.target.value === 'ADD_NEW') {
+                                            setShowNewCategoryInput(true);
+                                        } else {
+                                            handleChange('categoria', e.target.value);
+                                        }
+                                    }}
+                                >
+                                    {categories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                    <option value="ADD_NEW">✨ Añadir nueva categoría...</option>
+                                </select>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    className="form-input flex-1"
+                                    placeholder="Nombre de la categoría"
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    autoFocus
+                                />
+                                <button
+                                    type="button"
+                                    className="btn-primary text-sm px-3"
+                                    onClick={handleAddNewCategory}
+                                >
+                                    Añadir
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn-secondary text-sm px-3"
+                                    onClick={() => setShowNewCategoryInput(false)}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
                     </div>
+
+                    {/* Repetir Mensualmente (Solo para Suscripción) */}
+                    {formData.categoria === 'Suscripción' && (
+                        <div className="flex items-center gap-2 p-3 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+                            <input
+                                type="checkbox"
+                                id="is_recurring"
+                                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                checked={formData.is_recurring}
+                                onChange={(e) => handleChange('is_recurring', e.target.checked)}
+                            />
+                            <label htmlFor="is_recurring" className="text-sm font-medium text-indigo-200 cursor-pointer">
+                                Repetir cada mes indefinidamente
+                            </label>
+                        </div>
+                    )}
 
                     {/* Monto */}
                     <div>
@@ -209,16 +275,50 @@ export function ExpenseForm({ expense, onSave, onCancel, creditCards = [], onAdd
                         <label className="block text-sm font-medium mb-2 text-[var(--color-text-secondary)]">
                             Método de pago
                         </label>
-                        <select
-                            className={`form-input ${errors.metodo_pago ? 'border-red-500' : ''}`}
-                            value={formData.metodo_pago}
-                            onChange={(e) => handleChange('metodo_pago', e.target.value)}
-                        >
-                            <option value="">Seleccionar método</option>
-                            {paymentMethods.map(method => (
-                                <option key={method} value={method}>{method}</option>
-                            ))}
-                        </select>
+                        {!showNewMethodInput ? (
+                            <select
+                                className={`form-input ${errors.metodo_pago ? 'border-red-500' : ''}`}
+                                value={formData.metodo_pago}
+                                onChange={(e) => {
+                                    if (e.target.value === 'Otro') {
+                                        setShowNewMethodInput(true);
+                                    } else {
+                                        handleChange('metodo_pago', e.target.value);
+                                    }
+                                }}
+                            >
+                                <option value="">Seleccionar método</option>
+                                {paymentMethods.map(method => (
+                                    <option key={method} value={method}>{method}</option>
+                                ))}
+                                <option value="Otro">➕ Otro (Añadir nuevo...)</option>
+                            </select>
+                        ) : (
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    className="form-input flex-1"
+                                    placeholder="Nombre del método"
+                                    value={newMethodName}
+                                    onChange={(e) => setNewMethodName(e.target.value)}
+                                    autoFocus
+                                />
+                                <button
+                                    type="button"
+                                    className="btn-primary text-sm px-3"
+                                    onClick={handleAddNewMethod}
+                                >
+                                    Añadir
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn-secondary text-sm px-3"
+                                    onClick={() => setShowNewMethodInput(false)}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
                         {errors.metodo_pago && (
                             <p className="text-red-500 text-sm mt-1">{errors.metodo_pago}</p>
                         )}

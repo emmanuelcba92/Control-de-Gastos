@@ -20,16 +20,7 @@ export function Filters({
         'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
 
-    const STANDARD_PAYMENT_METHODS = [
-        'Tarjeta de crédito',
-        'Tarjeta de débito',
-        'Mercado Pago',
-        'Transferencia bancaria',
-        'Efectivo',
-        'Criptomoneda',
-        'PayPal',
-        'Otro'
-    ];
+    // We use the paymentMethods passed via props
 
     // Merge standard methods with any custom ones (though currently implementation uses standard)
     // or just use the passed unique list + standard ones if needed.
@@ -106,7 +97,7 @@ export function Filters({
                         onChange={(e) => onMethodChange(e.target.value)}
                     >
                         <option value="all">💳 Todos los métodos</option>
-                        {STANDARD_PAYMENT_METHODS.map(method => (
+                        {paymentMethods.map(method => (
                             <option key={method} value={method}>{method}</option>
                         ))}
                     </select>
