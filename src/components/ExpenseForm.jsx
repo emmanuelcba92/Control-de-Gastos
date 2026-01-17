@@ -31,6 +31,7 @@ export function ExpenseForm({
     const [newCategoryName, setNewCategoryName] = useState('');
     const [showNewMethodInput, setShowNewMethodInput] = useState(false);
     const [newMethodName, setNewMethodName] = useState('');
+    const [newMethodAllowsInstallments, setNewMethodAllowsInstallments] = useState(false);
     const [amountType, setAmountType] = useState('quota'); // 'quota' or 'total'
 
     // We use the categories and paymentMethods passed via props
@@ -113,14 +114,21 @@ export function ExpenseForm({
 
     const handleAddNewMethod = () => {
         if (newMethodName.trim() && onAddPaymentMethod) {
-            onAddPaymentMethod(newMethodName.trim());
+            onAddPaymentMethod({
+                name: newMethodName.trim(),
+                allowsInstallments: newMethodAllowsInstallments
+            });
             setFormData(prev => ({ ...prev, metodo_pago: newMethodName.trim() }));
             setNewMethodName('');
+            setNewMethodAllowsInstallments(false);
             setShowNewMethodInput(false);
         }
     };
 
-    const showInstallments = formData.metodo_pago === 'Tarjeta de crédito' || formData.metodo_pago === 'Mercado Crédito';
+    const currentMethod = paymentMethods.find(m => m.name === formData.metodo_pago);
+    const showInstallments = formData.metodo_pago === 'Tarjeta de crédito' ||
+        formData.metodo_pago === 'Mercado Crédito' ||
+        (currentMethod && currentMethod.allowsInstallments);
 
     return (
         <div className="modal-overlay" onClick={onCancel}>
@@ -288,35 +296,50 @@ export function ExpenseForm({
                                 }}
                             >
                                 <option value="">Seleccionar método</option>
-                                {paymentMethods.map(method => (
-                                    <option key={method} value={method}>{method}</option>
-                                ))}
+                                {paymentMethods.map(method => {
+                                    const name = typeof method === 'string' ? method : method.name;
+                                    return <option key={name} value={name}>{name}</option>;
+                                })}
                                 <option value="Otro">➕ Otro (Añadir nuevo...)</option>
                             </select>
                         ) : (
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    className="form-input flex-1"
-                                    placeholder="Nombre del método"
-                                    value={newMethodName}
-                                    onChange={(e) => setNewMethodName(e.target.value)}
-                                    autoFocus
-                                />
-                                <button
-                                    type="button"
-                                    className="btn-primary text-sm px-3"
-                                    onClick={handleAddNewMethod}
-                                >
-                                    Añadir
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn-secondary text-sm px-3"
-                                    onClick={() => setShowNewMethodInput(false)}
-                                >
-                                    ✕
-                                </button>
+                            <div className="space-y-3">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        className="form-input flex-1"
+                                        placeholder="Nombre del método"
+                                        value={newMethodName}
+                                        onChange={(e) => setNewMethodName(e.target.value)}
+                                        autoFocus
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn-primary text-sm px-3"
+                                        onClick={handleAddNewMethod}
+                                    >
+                                        Añadir
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn-secondary text-sm px-3"
+                                        onClick={() => setShowNewMethodInput(false)}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-2 px-1">
+                                    <input
+                                        type="checkbox"
+                                        id="newMethodAllowsInstallments"
+                                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        checked={newMethodAllowsInstallments}
+                                        onChange={(e) => setNewMethodAllowsInstallments(e.target.checked)}
+                                    />
+                                    <label htmlFor="newMethodAllowsInstallments" className="text-xs text-[var(--color-text-secondary)] cursor-pointer">
+                                        Este método permite pagos en cuotas
+                                    </label>
+                                </div>
                             </div>
                         )}
                         {errors.metodo_pago && (

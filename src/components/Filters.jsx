@@ -6,11 +6,14 @@ export function Filters({
     onYearChange,
     onMonthChange,
     paymentMethods = [],
+    categories = [],
     creditCards = [],
     selectedMethod = 'all',
     selectedCard = 'all',
+    selectedCategory = 'all',
     onMethodChange,
-    onCardChange
+    onCardChange,
+    onCategoryChange
 }) {
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
@@ -88,6 +91,18 @@ export function Filters({
                         </select>
                     )}
 
+                    {/* Category Selector */}
+                    <select
+                        className="form-input w-full sm:w-auto min-w-[150px]"
+                        value={selectedCategory}
+                        onChange={(e) => onCategoryChange(e.target.value)}
+                    >
+                        <option value="all">📁 Todas las categorías</option>
+                        {categories.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+
                     <div className="h-8 w-px bg-[var(--color-border)] mx-2 hidden sm:block"></div>
 
                     {/* Payment Method Selector */}
@@ -97,9 +112,10 @@ export function Filters({
                         onChange={(e) => onMethodChange(e.target.value)}
                     >
                         <option value="all">💳 Todos los métodos</option>
-                        {paymentMethods.map(method => (
-                            <option key={method} value={method}>{method}</option>
-                        ))}
+                        {paymentMethods.map(method => {
+                            const methodName = typeof method === 'string' ? method : method.name;
+                            return <option key={methodName} value={methodName}>{methodName}</option>;
+                        })}
                     </select>
 
                     {/* Credit Card Selector - Only if Credit Card is selected */}

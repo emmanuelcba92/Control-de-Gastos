@@ -13,12 +13,12 @@ export function useExpenses() {
     const [creditCards, setCreditCards] = useState([]);
     const [categories, setCategories] = useState(['Suscripción', 'Compra', 'Servicios']);
     const [paymentMethods, setPaymentMethods] = useState([
-        'Tarjeta de crédito',
-        'Tarjeta de débito',
-        'Mercado Crédito',
-        'Transferencia bancaria',
-        'Efectivo',
-        'Otro'
+        { name: 'Tarjeta de crédito', allowsInstallments: true },
+        { name: 'Tarjeta de débito', allowsInstallments: false },
+        { name: 'Mercado Crédito', allowsInstallments: true },
+        { name: 'Transferencia bancaria', allowsInstallments: false },
+        { name: 'Efectivo', allowsInstallments: false },
+        { name: 'Otro', allowsInstallments: false }
     ]);
 
     // --- DATA LOADING ---
@@ -171,13 +171,82 @@ export function useExpenses() {
     }, [categories, user]);
 
     // Add payment method
-    const addPaymentMethod = useCallback((name) => {
-        const updated = [...new Set([...paymentMethods, name])];
+    const addPaymentMethod = useCallback((methodData) => {
+        // methodData: { name, allowsInstallments }
+        const exists = paymentMethods.some(m => m.name === methodData.name);
+        if (exists) return;
+
+        const updated = [...paymentMethods, methodData];
         setPaymentMethods(updated);
         if (user) {
             dbService.savePaymentMethods(user.uid, updated);
         }
     }, [paymentMethods, user]);
+
+    // Delete category
+    const deleteCategory = useCallback((name) => {
+        // Check if there are expenses using this category from current month onwards
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        const hasExpenses = expenses.some(exp => {
+            if (exp.categoria !== name) return false;
+
+            const expStart = new Date(exp.fecha_inicio);
+            const expYear = expStart.getFullYear();
+            const expMonth = expStart.getMonth();
+            const cuotas = exp.cuotas || 1;
+
+            // Check if it's active now or in the future
+            if (exp.is_recurring) {
+                return (expYear < currentYear) || (expYear === currentYear && expMonth <= currentMonth) || (expYear >= currentYear);
+                // Simplified: if it started, it's active in the future.
+            } else {
+                const monthsDiff = (currentYear - expYear) * 12 + (currentMonth - expMonth);
+                return monthsDiff < cuotas;
+            }
+        });
+
+        if (hasExpenses) {
+            throw new Error(`No se puede eliminar la categoría "${name}" porque tiene gastos asociados activos o futuros.`);
+        }
+
+        const updated = categories.filter(c => c !== name);
+        setCategories(updated);
+        if (user) {
+            dbService.saveCategories(user.uid, updated);
+        }
+    }, [categories, expenses, user]);
+
+    // Delete payment method
+    const deletePaymentMethod = useCallback((name) => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        const hasExpenses = expenses.some(exp => {
+            if (exp.metodo_pago !== name) return false;
+
+            const expStart = new Date(exp.fecha_inicio);
+            const expYear = expStart.getFullYear();
+            const expMonth = expStart.getMonth();
+            const cuotas = exp.cuotas || 1;
+
+            const monthsDiff = (currentYear - expYear) * 12 + (currentMonth - expMonth);
+            return exp.is_recurring || monthsDiff < cuotas;
+        });
+
+        if (hasExpenses) {
+            throw new Error(`No se puede eliminar el método "${name}" porque tiene gastos asociados activos o futuros.`);
+        }
+
+        const updated = paymentMethods.filter(m => m.name !== name);
+        setPaymentMethods(updated);
+        if (user) {
+            dbService.savePaymentMethods(user.uid, updated);
+        }
+    }, [paymentMethods, expenses, user]);
 
     // Add new expense
     const addExpense = useCallback((expenseData) => {
@@ -243,10 +312,13 @@ export function useExpenses() {
 
     // --- CALCULATIONS (Same as before) ---
     // Get filtered expenses by date range
-    const getFilteredExpenses = useCallback((filterType, year, month = null, method = 'all', card = 'all') => {
+    const getFilteredExpenses = useCallback((filterType, year, month = null, method = 'all', card = 'all', category = 'all') => {
         let filtered = [];
 
         expenses.forEach(expense => {
+            if (category !== 'all' && expense.categoria !== category) return;
+            if (method !== 'all' && expense.metodo_pago !== method) return;
+            if (card !== 'all' && expense.tarjeta_credito !== card) return;
             const startDate = new Date(expense.fecha_inicio);
             const startYear = startDate.getFullYear();
             const startMonth = startDate.getMonth();
@@ -381,6 +453,8 @@ export function useExpenses() {
         removeCreditCard,
         addCategory,
         addPaymentMethod,
+        deleteCategory,
+        deletePaymentMethod,
         addExpense,
         updateExpense,
         deleteExpense,

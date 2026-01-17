@@ -8,11 +8,22 @@ const CURRENCIES = [
     { code: 'BRL', symbol: 'R$', name: 'Real Brasileño' }
 ];
 
-export function SettingsModal({ settings, creditCards, onSave, onRemoveCreditCard, onClose }) {
+export function SettingsModal({
+    settings,
+    creditCards = [],
+    categories = [],
+    paymentMethods = [],
+    onSave,
+    onRemoveCreditCard,
+    onDeleteCategory,
+    onDeletePaymentMethod,
+    onClose
+}) {
     const [formData, setFormData] = useState({
         salary: settings?.salary || 0,
         currency: settings?.currency || 'ARS'
     });
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         setFormData({
@@ -119,23 +130,107 @@ export function SettingsModal({ settings, creditCards, onSave, onRemoveCreditCar
                     {/* Tarjetas de Crédito */}
                     {creditCards.length > 0 && (
                         <div>
-                            <label className="block text-sm font-medium mb-2 text-[var(--color-text-secondary)]">
-                                Tarjetas de Crédito Guardadas
+                            <label className="block text-sm font-medium mb-3 text-[var(--color-text-secondary)]">
+                                Tarjetas de Crédito
                             </label>
-                            <div className="space-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {creditCards.map(card => (
-                                    <div key={card} className="flex items-center justify-between bg-[var(--color-surface)] p-3 rounded-lg border border-[var(--color-border)]">
+                                    <div key={card} className="flex items-center justify-between bg-[var(--color-surface)] p-2 px-3 rounded-lg border border-[var(--color-border)]">
                                         <span className="text-sm">💳 {card}</span>
                                         <button
                                             type="button"
                                             onClick={() => onRemoveCreditCard(card)}
-                                            className="text-red-500 hover:text-red-400 text-sm"
+                                            className="text-red-500 hover:text-red-400 p-1"
+                                            title="Eliminar tarjeta"
                                         >
-                                            Eliminar
+                                            ✕
                                         </button>
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    )}
+
+                    {/* Gestión de Categorías */}
+                    <div>
+                        <label className="block text-sm font-medium mb-3 text-[var(--color-text-secondary)]">
+                            Categorías Personalizadas
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {categories.filter(c => !['Suscripción', 'Compra', 'Servicios'].includes(c)).map(cat => (
+                                <div key={cat} className="flex items-center justify-between bg-[var(--color-surface)] p-2 px-3 rounded-lg border border-[var(--color-border)]">
+                                    <span className="text-sm">📁 {cat}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            try {
+                                                setError(null);
+                                                onDeleteCategory(cat);
+                                            } catch (err) {
+                                                setError(err.message);
+                                            }
+                                        }}
+                                        className="text-red-500 hover:text-red-400 p-1"
+                                        title="Eliminar categoría"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ))}
+                            {categories.filter(c => !['Suscripción', 'Compra', 'Servicios'].includes(c)).length === 0 && (
+                                <p className="text-xs text-[var(--color-text-muted)] col-span-2">No tienes categorías personalizadas.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Gestión de Métodos de Pago */}
+                    <div>
+                        <label className="block text-sm font-medium mb-3 text-[var(--color-text-secondary)]">
+                            Métodos de Pago Personalizados
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {paymentMethods.filter(m => {
+                                if (!m) return false;
+                                const name = typeof m === 'string' ? m : m.name;
+                                return !['Tarjeta de crédito', 'Tarjeta de débito', 'Mercado Crédito', 'Transferencia bancaria', 'Efectivo', 'Otro'].includes(name);
+                            }).map(method => {
+                                const name = typeof method === 'string' ? method : method.name;
+                                return (
+                                    <div key={name} className="flex items-center justify-between bg-[var(--color-surface)] p-2 px-3 rounded-lg border border-[var(--color-border)]">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm">💳 {name}</span>
+                                            {method.allowsInstallments && <span className="text-[10px] text-indigo-400">Permite cuotas</span>}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                try {
+                                                    setError(null);
+                                                    onDeletePaymentMethod(name);
+                                                } catch (err) {
+                                                    setError(err.message);
+                                                }
+                                            }}
+                                            className="text-red-500 hover:text-red-400 p-1"
+                                            title="Eliminar método"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                            {paymentMethods.filter(m => {
+                                const name = typeof m === 'string' ? m : m.name;
+                                return !['Tarjeta de crédito', 'Tarjeta de débito', 'Mercado Crédito', 'Transferencia bancaria', 'Efectivo', 'Otro'].includes(name);
+                            }).length === 0 && (
+                                    <p className="text-xs text-[var(--color-text-muted)] col-span-2">No tienes métodos de pago personalizados.</p>
+                                )}
+                        </div>
+                    </div>
+
+                    {error && (
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center">
+                            ⚠️ {error}
                         </div>
                     )}
 

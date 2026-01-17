@@ -17,6 +17,7 @@ function App() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [filterMethod, setFilterMethod] = useState('all');
   const [filterCard, setFilterCard] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
 
   const {
     expenses,
@@ -30,6 +31,8 @@ function App() {
     removeCreditCard,
     addCategory,
     addPaymentMethod,
+    deleteCategory,
+    deletePaymentMethod,
     addExpense,
     updateExpense,
     deleteExpense,
@@ -45,8 +48,8 @@ function App() {
 
   // Get filtered expenses based on current filter
   const filteredExpenses = useMemo(() => {
-    return getFilteredExpenses(filterType, selectedYear, selectedMonth, filterMethod, filterCard);
-  }, [expenses, filterType, selectedYear, selectedMonth, filterMethod, filterCard, getFilteredExpenses]);
+    return getFilteredExpenses(filterType, selectedYear, selectedMonth, filterMethod, filterCard, filterCategory);
+  }, [expenses, filterType, selectedYear, selectedMonth, filterMethod, filterCard, filterCategory, getFilteredExpenses]);
 
   const total = useMemo(() => calculateTotal(filteredExpenses), [filteredExpenses, calculateTotal]);
 
@@ -120,14 +123,17 @@ function App() {
                 year={selectedYear}
                 month={selectedMonth}
                 paymentMethods={paymentMethods}
+                categories={categories}
                 creditCards={creditCards}
                 selectedMethod={filterMethod}
                 selectedCard={filterCard}
+                selectedCategory={filterCategory}
                 onFilterTypeChange={setFilterType}
                 onYearChange={setSelectedYear}
                 onMonthChange={setSelectedMonth}
                 onMethodChange={setFilterMethod}
                 onCardChange={setFilterCard}
+                onCategoryChange={setFilterCategory}
               />
             </div>
             <button
@@ -186,8 +192,12 @@ function App() {
         <SettingsModal
           settings={settings}
           creditCards={creditCards}
+          categories={categories}
+          paymentMethods={paymentMethods}
           onSave={updateSettings}
           onRemoveCreditCard={removeCreditCard}
+          onDeleteCategory={deleteCategory}
+          onDeletePaymentMethod={deletePaymentMethod}
           onClose={() => setShowSettings(false)}
         />
       )}
