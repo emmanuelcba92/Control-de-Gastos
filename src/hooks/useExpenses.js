@@ -72,6 +72,7 @@ export function useExpenses() {
         } else {
             // OFFLINE MODE: Load from LocalStorage
             try {
+                const savedExpenses = storage.getExpenses();
                 const savedSettings = storage.getSettings();
                 const savedCards = storage.getCreditCards();
                 const savedCategories = storage.getCategories();
