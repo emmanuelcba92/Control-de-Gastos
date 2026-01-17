@@ -33,6 +33,7 @@ function App() {
     addPaymentMethod,
     deleteCategory,
     deletePaymentMethod,
+    updatePaymentMethod,
     addExpense,
     updateExpense,
     deleteExpense,

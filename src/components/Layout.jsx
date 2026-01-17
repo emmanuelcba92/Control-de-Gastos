@@ -7,10 +7,6 @@ export function Layout({ children, activeTab, onTabChange, onOpenSettings, setti
     const [theme, setTheme] = useState('light');
 
     useEffect(() => {
-        console.log("Layout mounted, viewport:", window.innerWidth, "x", window.innerHeight);
-    }, []);
-
-    useEffect(() => {
         const savedTheme = storage.getTheme();
         setTheme(savedTheme);
         document.documentElement.classList.toggle('dark', savedTheme === 'dark');
