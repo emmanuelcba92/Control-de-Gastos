@@ -45,6 +45,8 @@
 html,
 body {
   height: 100%;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -53,6 +55,7 @@ body {
   background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-tertiary) 100%);
   color: var(--color-text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -130,6 +133,22 @@ body {
   .mx-4 {
     margin-left: 0.5rem !important;
     margin-right: 0.5rem !important;
+  }
+
+  body,
+  #root {
+    overflow-x: hidden !important;
+    position: relative;
+  }
+}
+
+/* Fix mobile font size inputs avoiding auto-zoom on iOS */
+@media screen and (max-width: 768px) {
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 }
 
