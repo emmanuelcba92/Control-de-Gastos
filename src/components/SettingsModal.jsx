@@ -195,6 +195,7 @@ export function SettingsModal({
                                 const name = typeof m === 'string' ? m : m.name;
                                 return !['Tarjeta de crédito', 'Tarjeta de débito', 'Mercado Crédito', 'Transferencia bancaria', 'Efectivo', 'Otro'].includes(name);
                             }).map(method => {
+                                const name = typeof method === 'string' ? method : method.name;
                                 return (
                                     <div key={name} className="flex items-center justify-between bg-[var(--color-surface)] p-2 px-3 rounded-lg border border-[var(--color-border)]">
                                         <div className="flex flex-col flex-1">
