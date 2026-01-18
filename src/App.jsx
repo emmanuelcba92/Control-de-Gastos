@@ -54,7 +54,10 @@ function App() {
 
   const total = useMemo(() => calculateTotal(filteredExpenses), [filteredExpenses, calculateTotal]);
 
-  const monthlyTotals = useMemo(() => getMonthlyTotals(selectedYear), [selectedYear, getMonthlyTotals]);
+  const monthlyTotals = useMemo(
+    () => getMonthlyTotals(selectedYear, filterMethod, filterCard, filterCategory),
+    [selectedYear, filterMethod, filterCard, filterCategory, getMonthlyTotals]
+  );
 
   const expensesByMethod = useMemo(
     () => getExpensesByPaymentMethod(filteredExpenses),
@@ -114,38 +117,39 @@ function App() {
       onOpenSettings={() => setShowSettings(true)}
       settings={settings}
     >
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <Filters
+            filterType={filterType}
+            year={selectedYear}
+            month={selectedMonth}
+            paymentMethods={paymentMethods}
+            categories={categories}
+            creditCards={creditCards}
+            selectedMethod={filterMethod}
+            selectedCard={filterCard}
+            selectedCategory={filterCategory}
+            onFilterTypeChange={setFilterType}
+            onYearChange={setSelectedYear}
+            onMonthChange={setSelectedMonth}
+            onMethodChange={setFilterMethod}
+            onCardChange={setFilterCard}
+            onCategoryChange={setFilterCategory}
+          />
+        </div>
+        {activeTab === 'gastos' && (
+          <button
+            onClick={handleAddExpense}
+            className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap h-[42px]"
+          >
+            <span>➕</span>
+            <span>Añadir Gasto</span>
+          </button>
+        )}
+      </div>
+
       {activeTab === 'gastos' && (
         <>
-          {/* Filters and Add Button Row */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <Filters
-                filterType={filterType}
-                year={selectedYear}
-                month={selectedMonth}
-                paymentMethods={paymentMethods}
-                categories={categories}
-                creditCards={creditCards}
-                selectedMethod={filterMethod}
-                selectedCard={filterCard}
-                selectedCategory={filterCategory}
-                onFilterTypeChange={setFilterType}
-                onYearChange={setSelectedYear}
-                onMonthChange={setSelectedMonth}
-                onMethodChange={setFilterMethod}
-                onCardChange={setFilterCard}
-                onCategoryChange={setFilterCategory}
-              />
-            </div>
-            <button
-              onClick={handleAddExpense}
-              className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap"
-            >
-              <span>➕</span>
-              <span>Añadir Gasto</span>
-            </button>
-          </div>
-
           {/* Expense Table */}
           <ExpenseTable
             expenses={filteredExpenses}
@@ -161,7 +165,7 @@ function App() {
 
       {activeTab === 'graficos' && (
         <Charts
-          expenses={expenses}
+          expenses={filteredExpenses}
           monthlyTotals={monthlyTotals}
           expensesByMethod={expensesByMethod}
           expensesByCategory={expensesByCategory}

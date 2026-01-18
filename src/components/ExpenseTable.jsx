@@ -139,8 +139,18 @@ export function ExpenseTable({ expenses, onEdit, onDelete, total, settings = { c
                                         <td>
                                             <div className="font-medium flex items-center gap-2">
                                                 {expense.nombre}
+                                                {expense.is_shared && (
+                                                    <span className="text-xs bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded-full flex items-center gap-1" title={`Compartido con ${expense.shared_with} ${expense.shared_with === 1 ? 'persona' : 'personas'}`}>
+                                                        👥 {1 + (expense.shared_with || 1)}
+                                                    </span>
+                                                )}
                                                 {isEnding && <span className="text-xs bg-emerald-500 text-white px-1.5 py-0.5 rounded-full">Finaliza</span>}
                                             </div>
+                                            {expense.notas && (
+                                                <div className="text-[10px] text-[var(--color-text-muted)] italic mt-0.5 max-w-[200px] truncate" title={expense.notas}>
+                                                    📝 {expense.notas}
+                                                </div>
+                                            )}
                                         </td>
                                         <td>
                                             <span className="text-sm">
@@ -148,9 +158,16 @@ export function ExpenseTable({ expenses, onEdit, onDelete, total, settings = { c
                                             </span>
                                         </td>
                                         <td>
-                                            <span className="amount-display amount-positive">
-                                                {formatCurrency(expense.monto)}
-                                            </span>
+                                            <div className="flex flex-col items-end">
+                                                <span className="amount-display amount-positive">
+                                                    {formatCurrency(expense.monto)}
+                                                </span>
+                                                {expense.is_shared && (
+                                                    <span className="text-[10px] text-[var(--color-text-muted)]">
+                                                        Total: {formatCurrency(expense.monto_total || (expense.monto * (1 + (expense.shared_with || 1))))}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td>
                                             {expense.cuotas && expense.cuotas > 1 ? (

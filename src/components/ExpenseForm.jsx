@@ -21,7 +21,10 @@ export function ExpenseForm({
         fecha_gasto: expense?.fecha_gasto || new Date().toISOString().split('T')[0],
         cuotas: expense?.cuotas?.toString() || '1',
         cuota_actual: expense?.cuota_actual?.toString() || '1',
-        is_recurring: expense?.is_recurring || false
+        is_recurring: expense?.is_recurring || false,
+        is_shared: expense?.is_shared || false,
+        shared_with: expense?.shared_with?.toString() || '1',
+        notas: expense?.notas || ''
     });
 
     const [errors, setErrors] = useState({});
@@ -70,7 +73,8 @@ export function ExpenseForm({
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validateForm()) {
-            let finalAmount = parseFloat(formData.monto);
+            let originalMonto = parseFloat(formData.monto);
+            let finalAmount = originalMonto;
             const cuotas = parseInt(formData.cuotas) || 1;
 
             // If user entered Total Amount, divide by quotas to get monthly amount
@@ -78,9 +82,16 @@ export function ExpenseForm({
                 finalAmount = finalAmount / cuotas;
             }
 
+            // Adjust for shared expenses (divide by user + shared_with)
+            if (formData.is_shared) {
+                const totalPeople = 1 + (parseInt(formData.shared_with) || 0);
+                finalAmount = finalAmount / totalPeople;
+            }
+
             onSave({
                 ...formData,
-                monto: finalAmount, // Always save as monthly amount
+                monto: finalAmount, // Always save as monthly amount and user's portion
+                monto_total: originalMonto, // Keep reference to original total amount
                 cuotas: cuotas,
                 cuota_actual: parseInt(formData.cuota_actual) || 1
             });
@@ -438,6 +449,57 @@ export function ExpenseForm({
                             </div>
                         </div>
                     )}
+
+                    {/* Gastos Compartidos */}
+                    <div className="space-y-3 p-4 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    checked={formData.is_shared}
+                                    onChange={(e) => handleChange('is_shared', e.target.checked)}
+                                />
+                                <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                                    Compartir este gasto
+                                </span>
+                            </label>
+                            {formData.is_shared && (
+                                <span className="text-xs text-indigo-400 font-medium">
+                                    Dividiremos el monto por {1 + parseInt(formData.shared_with)}
+                                </span>
+                            )}
+                        </div>
+
+                        {formData.is_shared && (
+                            <div className="flex items-center gap-3 pl-6">
+                                <label className="text-xs text-[var(--color-text-secondary)]">Dividir con:</label>
+                                <select
+                                    className="form-input text-xs py-1 px-2 w-auto"
+                                    value={formData.shared_with}
+                                    onChange={(e) => handleChange('shared_with', e.target.value)}
+                                >
+                                    <option value="1">1 persona más</option>
+                                    <option value="2">2 personas más</option>
+                                    <option value="3">3 personas más</option>
+                                    <option value="4">4 personas más</option>
+                                </select>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Notas */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2 text-[var(--color-text-secondary)]">
+                            Notas o anotaciones (opcional)
+                        </label>
+                        <textarea
+                            className="form-input min-h-[80px] py-2 resize-none"
+                            placeholder="Escribe aquí algún recordatorio o detalle..."
+                            value={formData.notas}
+                            onChange={(e) => handleChange('notas', e.target.value)}
+                        />
+                    </div>
 
                     {/* Fechas */}
                     <div className="grid grid-cols-2 gap-4">

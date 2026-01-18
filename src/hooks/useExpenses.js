@@ -280,6 +280,10 @@ export function useExpenses() {
             cuotas: parseInt(expenseData.cuotas) || 1,
             cuota_actual: parseInt(expenseData.cuota_actual) || 1,
             is_recurring: !!expenseData.is_recurring,
+            is_shared: !!expenseData.is_shared,
+            shared_with: parseInt(expenseData.shared_with) || 1,
+            monto_total: parseFloat(expenseData.monto_total) || parseFloat(expenseData.monto),
+            notas: expenseData.notas || '',
             createdAt: new Date().toISOString()
         };
 
@@ -306,6 +310,10 @@ export function useExpenses() {
             cuotas: parseInt(expenseData.cuotas) || 1,
             cuota_actual: parseInt(expenseData.cuota_actual) || 1,
             is_recurring: !!expenseData.is_recurring,
+            is_shared: !!expenseData.is_shared,
+            shared_with: parseInt(expenseData.shared_with) || 1,
+            monto_total: parseFloat(expenseData.monto_total) || parseFloat(expenseData.monto),
+            notas: expenseData.notas || '',
             updatedAt: new Date().toISOString()
         };
 
@@ -428,9 +436,13 @@ export function useExpenses() {
         return grouped;
     }, []);
 
-    const getMonthlyTotals = useCallback((year) => {
+    const getMonthlyTotals = useCallback((year, method = 'all', card = 'all', category = 'all') => {
         const monthlyTotals = Array(12).fill(0);
         expenses.forEach(expense => {
+            if (category !== 'all' && expense.categoria !== category) return;
+            if (method !== 'all' && expense.metodo_pago !== method) return;
+            if (card !== 'all' && expense.tarjeta_credito !== card) return;
+
             const startDate = new Date(expense.fecha_inicio);
             const startYear = startDate.getFullYear();
             const startMonth = startDate.getMonth();

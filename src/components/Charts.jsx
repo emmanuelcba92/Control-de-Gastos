@@ -223,7 +223,9 @@ export function Charts({
             {/* Summary Cards with Salary Indicator */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className={`total-card ${statusColor === 'green' ? 'border-green-500' : statusColor === 'yellow' ? 'border-yellow-500' : 'border-red-500'}`} style={{ borderWidth: '3px', borderStyle: 'solid' }}>
-                    <div className="label">Total Mensual</div>
+                    <div className="label">
+                        {expenses.some(e => e.cuotas > 1) ? 'Total Filtrado' : 'Total Mensual'}
+                    </div>
                     <div className="value">{formatCurrency(totalMonthly)}</div>
                     {settings.salary > 0 && (
                         <div className={`text-xs mt-1 font-medium ${statusColor === 'green' ? 'text-green-500' : statusColor === 'yellow' ? 'text-yellow-500' : 'text-red-500'}`}>
