@@ -218,8 +218,8 @@ export function ExpenseForm({
                         )}
                     </div>
 
-                    {/* Repetir Mensualmente (Solo para Suscripción) */}
-                    {formData.categoria === 'Suscripción' && (
+                    {/* Repetir Mensualmente (Suscripción o Servicios) */}
+                    {(formData.categoria === 'Suscripción' || formData.categoria === 'Servicios') && (
                         <div className="flex items-center gap-2 p-3 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
                             <input
                                 type="checkbox"
