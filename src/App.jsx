@@ -4,6 +4,7 @@ import { ExpenseTable } from './components/ExpenseTable';
 import { ExpenseForm } from './components/ExpenseForm';
 import { Filters } from './components/Filters';
 import { Charts } from './components/Charts';
+import { NotesView } from './components/NotesView';
 import { SettingsModal } from './components/SettingsModal';
 import { useExpenses } from './hooks/useExpenses';
 
@@ -45,6 +46,8 @@ function App() {
     getMonthlyTotals,
     getSalaryPercentage,
     getStatusColor,
+    generalNotes,
+    updateGeneralNotes,
   } = useExpenses();
 
   // Get filtered expenses based on current filter
@@ -117,50 +120,49 @@ function App() {
       onOpenSettings={() => setShowSettings(true)}
       settings={settings}
     >
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="flex-1">
-          <Filters
-            filterType={filterType}
-            year={selectedYear}
-            month={selectedMonth}
-            paymentMethods={paymentMethods}
-            categories={categories}
-            creditCards={creditCards}
-            selectedMethod={filterMethod}
-            selectedCard={filterCard}
-            selectedCategory={filterCategory}
-            onFilterTypeChange={setFilterType}
-            onYearChange={setSelectedYear}
-            onMonthChange={setSelectedMonth}
-            onMethodChange={setFilterMethod}
-            onCardChange={setFilterCard}
-            onCategoryChange={setFilterCategory}
-          />
+      {(activeTab === 'gastos' || activeTab === 'graficos') && (
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex-1">
+            <Filters
+              filterType={filterType}
+              year={selectedYear}
+              month={selectedMonth}
+              paymentMethods={paymentMethods}
+              categories={categories}
+              creditCards={creditCards}
+              selectedMethod={filterMethod}
+              selectedCard={filterCard}
+              selectedCategory={filterCategory}
+              onFilterTypeChange={setFilterType}
+              onYearChange={setSelectedYear}
+              onMonthChange={setSelectedMonth}
+              onMethodChange={setFilterMethod}
+              onCardChange={setFilterCard}
+              onCategoryChange={setFilterCategory}
+            />
+          </div>
+          {activeTab === 'gastos' && (
+            <button
+              onClick={handleAddExpense}
+              className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap h-[42px]"
+            >
+              <span>➕</span>
+              <span>Añadir Gasto</span>
+            </button>
+          )}
         </div>
-        {activeTab === 'gastos' && (
-          <button
-            onClick={handleAddExpense}
-            className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap h-[42px]"
-          >
-            <span>➕</span>
-            <span>Añadir Gasto</span>
-          </button>
-        )}
-      </div>
+      )}
 
       {activeTab === 'gastos' && (
-        <>
-          {/* Expense Table */}
-          <ExpenseTable
-            expenses={filteredExpenses}
-            onEdit={handleEditExpense}
-            onDelete={deleteExpense}
-            total={total}
-            settings={settings}
-            getSalaryPercentage={getSalaryPercentage}
-            getStatusColor={getStatusColor}
-          />
-        </>
+        <ExpenseTable
+          expenses={filteredExpenses}
+          onEdit={handleEditExpense}
+          onDelete={deleteExpense}
+          total={total}
+          settings={settings}
+          getSalaryPercentage={getSalaryPercentage}
+          getStatusColor={getStatusColor}
+        />
       )}
 
       {activeTab === 'graficos' && (
@@ -174,6 +176,13 @@ function App() {
           settings={settings}
           getSalaryPercentage={getSalaryPercentage}
           getStatusColor={getStatusColor}
+        />
+      )}
+
+      {activeTab === 'notas' && (
+        <NotesView
+          notes={generalNotes}
+          onSave={updateGeneralNotes}
         />
       )}
 

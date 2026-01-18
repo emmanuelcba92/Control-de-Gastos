@@ -20,6 +20,7 @@ export function useExpenses() {
         { name: 'Efectivo', allowsInstallments: false },
         { name: 'Otro', allowsInstallments: false }
     ]);
+    const [generalNotes, setGeneralNotes] = useState('');
 
     // --- DATA LOADING ---
     useEffect(() => {
@@ -29,6 +30,7 @@ export function useExpenses() {
         let unsubscribeCards = () => { };
         let unsubscribeCategories = () => { };
         let unsubscribePaymentMethods = () => { };
+        let unsubscribeGeneralNotes = () => { };
 
         if (user) {
             // ONLINE MODE: Subscribe to Firestore
@@ -72,6 +74,10 @@ export function useExpenses() {
                 }
             });
 
+            unsubscribeGeneralNotes = dbService.subscribeToGeneralNotes(user.uid, (data) => {
+                if (data !== undefined) setGeneralNotes(data);
+            });
+
         } else {
             // OFFLINE MODE: Load from LocalStorage
             try {
@@ -89,6 +95,8 @@ export function useExpenses() {
                     const normalized = savedPaymentMethods.map(m => typeof m === 'string' ? { name: m, allowsInstallments: false } : m);
                     setPaymentMethods(normalized);
                 }
+                const savedGeneralNotes = storage.getGeneralNotes();
+                if (savedGeneralNotes) setGeneralNotes(savedGeneralNotes);
             } catch (err) {
                 setError('Error al cargar los gastos');
             } finally {
@@ -102,6 +110,7 @@ export function useExpenses() {
             unsubscribeCards();
             unsubscribeCategories();
             unsubscribePaymentMethods();
+            unsubscribeGeneralNotes();
         };
     }, [user]);
 
@@ -138,6 +147,12 @@ export function useExpenses() {
             storage.savePaymentMethods(paymentMethods);
         }
     }, [paymentMethods, loading, user]);
+
+    useEffect(() => {
+        if (!user && !loading) {
+            storage.saveGeneralNotes(generalNotes);
+        }
+    }, [generalNotes, loading, user]);
 
     // --- ACTIONS ---
 
@@ -200,6 +215,14 @@ export function useExpenses() {
             dbService.savePaymentMethods(user.uid, updated);
         }
     }, [paymentMethods, user]);
+
+    // Update general notes
+    const updateGeneralNotes = useCallback((notes) => {
+        setGeneralNotes(notes);
+        if (user) {
+            dbService.saveGeneralNotes(user.uid, notes);
+        }
+    }, [user]);
 
     // Delete category
     const deleteCategory = useCallback((name) => {
@@ -496,6 +519,8 @@ export function useExpenses() {
         getExpensesByCreditCard,
         getMonthlyTotals,
         getSalaryPercentage,
-        getStatusColor
+        getStatusColor,
+        generalNotes,
+        updateGeneralNotes
     };
 }

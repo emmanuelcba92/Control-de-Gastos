@@ -6,6 +6,7 @@ const SETTINGS_KEY = 'coste-vida-digital-settings';
 const CREDIT_CARDS_KEY = 'coste-vida-digital-credit-cards';
 const CATEGORIES_KEY = 'coste-vida-digital-categories';
 const PAYMENT_METHODS_KEY = 'coste-vida-digital-payment-methods';
+const GENERAL_NOTES_KEY = 'coste-vida-digital-general-notes';
 
 export const storage = {
     // Get all expenses from localStorage
@@ -133,6 +134,25 @@ export const storage = {
     savePaymentMethods: (methods) => {
         try {
             localStorage.setItem(PAYMENT_METHODS_KEY, JSON.stringify(methods));
+            return true;
+        } catch (error) {
+            return false;
+        }
+    },
+
+    // Get general notes
+    getGeneralNotes: () => {
+        try {
+            return localStorage.getItem(GENERAL_NOTES_KEY) || '';
+        } catch (error) {
+            return '';
+        }
+    },
+
+    // Save general notes
+    saveGeneralNotes: (notes) => {
+        try {
+            localStorage.setItem(GENERAL_NOTES_KEY, notes);
             return true;
         } catch (error) {
             return false;

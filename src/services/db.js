@@ -113,5 +113,16 @@ export const dbService = {
         }
 
         await batch.commit();
+    },
+
+    // --- GENERAL NOTES ---
+    saveGeneralNotes: async (uid, notes) => {
+        await setDoc(doc(db, 'users', uid, 'metadata', 'general_notes'), { content: notes });
+    },
+
+    subscribeToGeneralNotes: (uid, callback) => {
+        return onSnapshot(doc(db, 'users', uid, 'metadata', 'general_notes'), (doc) => {
+            if (doc.exists()) callback(doc.data().content || '');
+        });
     }
 };

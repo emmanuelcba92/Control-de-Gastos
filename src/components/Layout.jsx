@@ -105,6 +105,12 @@ export function Layout({ children, activeTab, onTabChange, onOpenSettings, setti
                     >
                         📈 Gráficos
                     </button>
+                    <button
+                        className={`tab-button ${activeTab === 'notas' ? 'active' : ''}`}
+                        onClick={() => onTabChange('notas')}
+                    >
+                        📝 Notas
+                    </button>
                 </nav>
             </header>
 
