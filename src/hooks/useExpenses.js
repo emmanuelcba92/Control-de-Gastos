@@ -9,7 +9,21 @@ export function useExpenses() {
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [settings, setSettings] = useState({ salary: 0, currency: 'ARS' });
+    const [settings, setSettings] = useState({
+        salary: 0,
+        currency: 'ARS',
+        notifications: {
+            browser: false,
+            email: false,
+            emailAddress: '',
+            emailjs: {
+                serviceId: '',
+                templateId: '',
+                publicKey: ''
+            }
+        },
+        fcmTokens: []
+    });
     const [creditCards, setCreditCards] = useState([]);
     const [categories, setCategories] = useState(['Suscripción', 'Compra', 'Servicios']);
     const [paymentMethods, setPaymentMethods] = useState([
@@ -307,6 +321,7 @@ export function useExpenses() {
             shared_with: parseInt(expenseData.shared_with) || 1,
             monto_total: parseFloat(expenseData.monto_total) || parseFloat(expenseData.monto),
             notas: expenseData.notas || '',
+            notify_expiration: !!expenseData.notify_expiration,
             createdAt: new Date().toISOString()
         };
 
@@ -337,6 +352,7 @@ export function useExpenses() {
             shared_with: parseInt(expenseData.shared_with) || 1,
             monto_total: parseFloat(expenseData.monto_total) || parseFloat(expenseData.monto),
             notas: expenseData.notas || '',
+            notify_expiration: !!expenseData.notify_expiration,
             updatedAt: new Date().toISOString()
         };
 

@@ -6,6 +6,7 @@ import { Filters } from './components/Filters';
 import { Charts } from './components/Charts';
 import { NotesView } from './components/NotesView';
 import { SettingsModal } from './components/SettingsModal';
+import { NotificationManager } from './components/NotificationManager';
 import { useExpenses } from './hooks/useExpenses';
 
 function App() {
@@ -120,6 +121,7 @@ function App() {
       onOpenSettings={() => setShowSettings(true)}
       settings={settings}
     >
+      <NotificationManager settings={settings} onUpdateSettings={updateSettings} />
       {(activeTab === 'gastos' || activeTab === 'graficos') && (
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1">

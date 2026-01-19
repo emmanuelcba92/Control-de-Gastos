@@ -22,14 +22,25 @@ export function SettingsModal({
 }) {
     const [formData, setFormData] = useState({
         salary: settings?.salary || 0,
-        currency: settings?.currency || 'ARS'
+        currency: settings?.currency || 'ARS',
+        notifications: settings?.notifications || {
+            browser: false,
+            email: false,
+            emailAddress: '',
+            emailjs: {
+                serviceId: '',
+                templateId: '',
+                publicKey: ''
+            }
+        }
     });
     const [error, setError] = useState(null);
 
     useEffect(() => {
         setFormData({
             salary: settings?.salary || 0,
-            currency: settings?.currency || 'ARS'
+            currency: settings?.currency || 'ARS',
+            notifications: settings?.notifications || formData.notifications
         });
     }, [settings]);
 
@@ -37,7 +48,8 @@ export function SettingsModal({
         e.preventDefault();
         onSave({
             salary: parseFloat(formData.salary) || 0,
-            currency: formData.currency
+            currency: formData.currency,
+            notifications: formData.notifications
         });
         onClose();
     };
@@ -244,6 +256,126 @@ export function SettingsModal({
                             ⚠️ {error}
                         </div>
                     )}
+
+                    {/* Notificaciones */}
+                    <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 space-y-4">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                            🔔 Notificaciones
+                        </h3>
+
+                        <div className="space-y-3">
+                            {/* Browser Notifications */}
+                            <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-medium text-[var(--color-text-primary)]">FCM Push (Navegador)</span>
+                                    <span className="text-xs text-[var(--color-text-secondary)]">Avisos incluso con navegador cerrado</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={formData.notifications.browser}
+                                        onChange={(e) => setFormData(prev => ({
+                                            ...prev,
+                                            notifications: { ...prev.notifications, browser: e.target.checked }
+                                        }))}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+
+                            {/* Email Notifications */}
+                            <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-medium text-[var(--color-text-primary)]">Avisos por Email</span>
+                                    <span className="text-xs text-[var(--color-text-secondary)]">Respaldo en tu bandeja de entrada</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={formData.notifications.email}
+                                        onChange={(e) => setFormData(prev => ({
+                                            ...prev,
+                                            notifications: { ...prev.notifications, email: e.target.checked }
+                                        }))}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+
+                            {formData.notifications.email && (
+                                <div className="pl-2 space-y-4 animate-in fade-in slide-in-from-top-2">
+                                    <div>
+                                        <label className="block text-xs font-medium mb-1 text-[var(--color-text-secondary)]">
+                                            Correo para notificaciones
+                                        </label>
+                                        <input
+                                            type="email"
+                                            className="form-input text-sm h-9"
+                                            placeholder="tu@email.com"
+                                            value={formData.notifications.emailAddress}
+                                            onChange={(e) => setFormData(prev => ({
+                                                ...prev,
+                                                notifications: { ...prev.notifications, emailAddress: e.target.value }
+                                            }))}
+                                        />
+                                    </div>
+
+                                    <div className="p-3 bg-indigo-500/5 rounded-lg border border-indigo-500/10 space-y-3">
+                                        <p className="text-[10px] uppercase tracking-wider font-bold text-indigo-400">Configuración EmailJS (Requerido)</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="col-span-2">
+                                                <label className="block text-[10px] text-[var(--color-text-muted)] mb-1">Service ID</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input text-xs h-8"
+                                                    value={formData.notifications.emailjs.serviceId}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        notifications: {
+                                                            ...prev.notifications,
+                                                            emailjs: { ...prev.notifications.emailjs, serviceId: e.target.value }
+                                                        }
+                                                    }))}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] text-[var(--color-text-muted)] mb-1">Template ID</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input text-xs h-8"
+                                                    value={formData.notifications.emailjs.templateId}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        notifications: {
+                                                            ...prev.notifications,
+                                                            emailjs: { ...prev.notifications.emailjs, templateId: e.target.value }
+                                                        }
+                                                    }))}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] text-[var(--color-text-muted)] mb-1">Public Key</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input text-xs h-8"
+                                                    value={formData.notifications.emailjs.publicKey}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        notifications: {
+                                                            ...prev.notifications,
+                                                            emailjs: { ...prev.notifications.emailjs, publicKey: e.target.value }
+                                                        }
+                                                    }))}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Gestión de Datos */}
                     <div>

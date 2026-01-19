@@ -8,7 +8,8 @@ import {
     onSnapshot,
     query,
     orderBy,
-    writeBatch
+    writeBatch,
+    arrayUnion
 } from 'firebase/firestore';
 
 export const dbService = {
@@ -124,5 +125,11 @@ export const dbService = {
         return onSnapshot(doc(db, 'users', uid, 'metadata', 'general_notes'), (doc) => {
             if (doc.exists()) callback(doc.data().content || '');
         });
+    },
+
+    // --- FCM TOKENS ---
+    saveFcmToken: async (uid, token) => {
+        const ref = doc(db, 'users', uid, 'metadata', 'settings');
+        await setDoc(ref, { fcmTokens: arrayUnion(token) }, { merge: true });
     }
-};
+}

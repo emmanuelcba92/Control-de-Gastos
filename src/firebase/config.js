@@ -2,6 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getMessaging } from 'firebase/messaging';
 
 // ⚠️ REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO FIREBASE ⚠️
 // Si usas .env, las tomará de ahí. Si no, puedes pegarlas directamente (aunque no es "best practice", es funcional para uso personal).
@@ -20,3 +21,4 @@ const app = initializeApp(firebaseConfig);
 // Services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const messaging = typeof window !== 'undefined' ? getMessaging(app) : null;

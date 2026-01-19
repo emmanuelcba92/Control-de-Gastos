@@ -24,7 +24,8 @@ export function ExpenseForm({
         is_recurring: expense?.is_recurring || false,
         is_shared: expense?.is_shared || false,
         shared_with: expense?.shared_with?.toString() || '1',
-        notas: expense?.notas || ''
+        notas: expense?.notas || '',
+        notify_expiration: expense?.notify_expiration || false
     });
 
     const [errors, setErrors] = useState({});
@@ -220,17 +221,32 @@ export function ExpenseForm({
 
                     {/* Repetir Mensualmente (Suscripción o Servicios) */}
                     {(formData.categoria === 'Suscripción' || formData.categoria === 'Servicios') && (
-                        <div className="flex items-center gap-2 p-3 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                            <input
-                                type="checkbox"
-                                id="is_recurring"
-                                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                checked={formData.is_recurring}
-                                onChange={(e) => handleChange('is_recurring', e.target.checked)}
-                            />
-                            <label htmlFor="is_recurring" className="text-sm font-medium text-indigo-200 cursor-pointer">
-                                Repetir cada mes indefinidamente
-                            </label>
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 p-3 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+                                <input
+                                    type="checkbox"
+                                    id="is_recurring"
+                                    className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    checked={formData.is_recurring}
+                                    onChange={(e) => handleChange('is_recurring', e.target.checked)}
+                                />
+                                <label htmlFor="is_recurring" className="text-sm font-medium text-indigo-200 cursor-pointer">
+                                    Repetir cada mes indefinidamente
+                                </label>
+                            </div>
+
+                            <div className="flex items-center gap-2 p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                                <input
+                                    type="checkbox"
+                                    id="notify_expiration"
+                                    className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                    checked={formData.notify_expiration}
+                                    onChange={(e) => handleChange('notify_expiration', e.target.checked)}
+                                />
+                                <label htmlFor="notify_expiration" className="text-sm font-medium text-purple-200 cursor-pointer">
+                                    🔔 Notificar vencimiento (Navegador y Email)
+                                </label>
+                            </div>
                         </div>
                     )}
 
