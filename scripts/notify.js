@@ -2,11 +2,30 @@ const admin = require('firebase-admin');
 const axios = require('axios'); // For EmailJS if we use their API directly, or we can use another method.
 
 // Initialize Firebase Admin with Service Account from ENV
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.error('ERROR: FIREBASE_SERVICE_ACCOUNT secret is missing in GitHub Actions.');
+    process.exit(1);
+}
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
+let serviceAccount;
+try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} catch (e) {
+    console.error('ERROR: FIREBASE_SERVICE_ACCOUNT is not a valid JSON.');
+    console.error(e.message);
+    process.exit(1);
+}
+
+try {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
+    console.log('Firebase Admin initialized successfully.');
+} catch (e) {
+    console.error('ERROR: Failed to initialize Firebase Admin.');
+    console.error(e.message);
+    process.exit(1);
+}
 
 const db = admin.firestore();
 
