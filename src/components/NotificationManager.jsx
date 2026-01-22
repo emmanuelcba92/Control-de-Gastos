@@ -15,15 +15,17 @@ export function NotificationManager({ settings, onUpdateSettings }) {
                 // Request permission
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    // Get token
-                    // ⚠️ IMPORTANTE: Debes generar tu propia clave VAPID en Firebase Console:
-                    // Project Settings -> Cloud Messaging -> Web configuration -> Web Push certificates
-                    const token = await getToken(messaging, {
-                        vapidKey: 'TU_CLAVE_VAPID_AQUI'
-                    });
+                    const vapidKey = 'TU_CLAVE_VAPID_AQUI'; // <--- EL USUARIO DEBE REEMPLAZAR ESTO
+
+                    if (vapidKey === 'TU_CLAVE_VAPID_AQUI') {
+                        console.warn('⚠️ FCM: Falta configurar la clave VAPID en NotificationManager.jsx');
+                        return;
+                    }
+
+                    const token = await getToken(messaging, { vapidKey });
 
                     if (token) {
-                        console.log('FCM Token:', token);
+                        console.log('FCM Token obtenido:', token);
                         await dbService.saveFcmToken(user.uid, token);
                     }
                 }
