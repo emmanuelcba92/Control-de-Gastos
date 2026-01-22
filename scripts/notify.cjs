@@ -73,14 +73,23 @@ async function processNotifications() {
 
     for (const userDoc of usersSnapshot.docs) {
         const uid = userDoc.id;
+        console.log(`Processing user: ${uid}`);
         const settingsDoc = await db.collection('users').doc(uid).collection('metadata').doc('settings').get();
 
-        if (!settingsDoc.exists()) continue;
+        if (!settingsDoc.exists()) {
+            console.log(`No settings found for user ${uid}`);
+            continue;
+        }
         const settings = settingsDoc.data();
+        console.log(`Notification settings: Browser=${settings.notifications?.browser}, Email=${settings.notifications?.email}`);
 
-        if (!settings.notifications?.browser && !settings.notifications?.email) continue;
+        if (!settings.notifications?.browser && !settings.notifications?.email) {
+            console.log(`Notifications disabled for user ${uid}`);
+            continue;
+        }
 
         const expensesSnapshot = await db.collection('users').doc(uid).collection('expenses').get();
+        console.log(`Found ${expensesSnapshot.size} expenses for user ${uid}`);
 
         for (const expDoc of expensesSnapshot.docs) {
             const exp = expDoc.data();
@@ -89,17 +98,29 @@ async function processNotifications() {
             const startDate = new Date(exp.fecha_inicio);
             const expDay = startDate.getDate();
 
-            let shouldNotifyToday = (today.getDate() === expDay);
-            let shouldNotifyTomorrow = (tomorrow.getDate() === expDay);
+            // Notify on days: expDay-2, expDay-1, expDay
+            const daysToExpiration = (expDay - today.getDate() + 31) % 31;
 
-            if (shouldNotifyToday || shouldNotifyTomorrow) {
-                const timeLabel = shouldNotifyToday ? 'vence HOY' : 'vence MAÑANA';
-                const title = `Vencimiento de Servicio: ${exp.nombre}`;
-                const body = `Tu servicio "${exp.nombre}" de ${exp.categoria} ${timeLabel} por un monto de ${settings.currency || 'ARS'} ${exp.monto}.`;
+            console.log(`Evaluating "${exp.nombre}": DayOfMonth=${expDay}, Today=${today.getDate()}, DaysRemaining=${daysToExpiration}`);
+
+            if (daysToExpiration >= 0 && daysToExpiration <= 2) {
+                const timeLabel = daysToExpiration === 0 ? 'vence HOY' :
+                    daysToExpiration === 1 ? 'vence MAÑANA' :
+                        `vence en ${daysToExpiration} días`;
+
+                const title = `⚠️ Vencimiento: ${exp.nombre}`;
+                const body = `Tu servicio "${exp.nombre}" ${timeLabel} (${settings.currency || 'ARS'} ${exp.monto}).`;
+
+                console.log(`>> NOTIFICATION TRIGGERED: ${title}`);
 
                 // Send FCM
-                if (settings.notifications.browser) {
-                    await sendFcmNotification(settings.fcmTokens, title, body);
+                if (settings.notifications.browser && settings.fcmTokens) {
+                    const validTokens = settings.fcmTokens.filter(t => typeof t === 'string' && t.length > 10);
+                    if (validTokens.length > 0) {
+                        await sendFcmNotification(validTokens, title, body);
+                    } else {
+                        console.log(`   [!] No valid FCM tokens found for user ${uid}`);
+                    }
                 }
 
                 // Send Email

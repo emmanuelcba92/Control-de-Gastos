@@ -16,10 +16,10 @@ export function NotificationManager({ settings, onUpdateSettings }) {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
                     // Get token
-                    // ⚠️ IMPORTANT: In a real app, you would provide your VAPID key here
-                    // getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY' })
+                    // ⚠️ IMPORTANTE: Debes generar tu propia clave VAPID en Firebase Console:
+                    // Project Settings -> Cloud Messaging -> Web configuration -> Web Push certificates
                     const token = await getToken(messaging, {
-                        vapidKey: 'BNHj-8-U8_Wf4W-C_u8T9X4Z-_f0rO5T2Y_7oX9M_f0' // Placeholder/Example VAPID
+                        vapidKey: 'TU_CLAVE_VAPID_AQUI'
                     });
 
                     if (token) {

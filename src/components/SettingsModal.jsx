@@ -374,6 +374,32 @@ export function SettingsModal({
                                     </div>
                                 </div>
                             )}
+
+                            {formData.notifications.browser && (
+                                <div className="mt-4 p-3 bg-purple-500/5 rounded-lg border border-purple-500/10 space-y-3">
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (Notification.permission === 'granted') {
+                                                    new Notification('¡Prueba Exitosa!', {
+                                                        body: 'Las notificaciones del navegador están funcionando correctamente.',
+                                                        icon: '/vite.svg'
+                                                    });
+                                                } else {
+                                                    alert('Primero debes activar las notificaciones y dar permiso al navegador.');
+                                                }
+                                            }}
+                                            className="btn-secondary text-xs flex-1 py-1"
+                                        >
+                                            🔔 Probar Local
+                                        </button>
+                                        <div className="flex-1 text-[9px] text-[var(--color-text-muted)] italic leading-tight">
+                                            Para notificaciones en la nube, debes configurar tu clave VAPID en el código.
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
