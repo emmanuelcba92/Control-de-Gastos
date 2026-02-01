@@ -388,9 +388,18 @@ export function useExpenses() {
             // Shared filter logic
             if (sharedFilter === 'shared' && !expense.is_shared) return;
             if (sharedFilter === 'not_shared' && expense.is_shared) return;
-            const startDate = new Date(expense.fecha_inicio);
-            const startYear = startDate.getFullYear();
-            const startMonth = startDate.getMonth();
+            // Parse date manually to avoid timezone shift (YYYY-MM-DD)
+            const dateParts = (expense.fecha_inicio || "").split('-');
+            let startYear, startMonth;
+
+            if (dateParts.length === 3) {
+                startYear = parseInt(dateParts[0]);
+                startMonth = parseInt(dateParts[1]) - 1;
+            } else {
+                const startDate = new Date(expense.fecha_inicio);
+                startYear = startDate.getFullYear();
+                startMonth = startDate.getMonth();
+            }
             const cuotas = expense.cuotas || 1;
 
             // Filter by Date (Projection)
@@ -490,9 +499,18 @@ export function useExpenses() {
             if (sharedFilter === 'shared' && !expense.is_shared) return;
             if (sharedFilter === 'not_shared' && expense.is_shared) return;
 
-            const startDate = new Date(expense.fecha_inicio);
-            const startYear = startDate.getFullYear();
-            const startMonth = startDate.getMonth();
+            // Parse date manually to avoid timezone shift (YYYY-MM-DD)
+            const dateParts = (expense.fecha_inicio || "").split('-');
+            let startYear, startMonth;
+
+            if (dateParts.length === 3) {
+                startYear = parseInt(dateParts[0]);
+                startMonth = parseInt(dateParts[1]) - 1;
+            } else {
+                const startDate = new Date(expense.fecha_inicio);
+                startYear = startDate.getFullYear();
+                startMonth = startDate.getMonth();
+            }
             const cuotas = expense.cuotas || 1;
             const amount = expense.monto;
 

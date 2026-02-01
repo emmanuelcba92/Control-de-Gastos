@@ -25,11 +25,23 @@ export function ExpenseTable({ expenses, onEdit, onDelete, total, settings = { c
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
-        const date = new Date(dateString);
+
+        // dateString comes as YYYY-MM-DD from the input
+        // new Date(dateString) treats it as UTC, causing shifts in local time.
+        // We parse it manually to create a local date instance.
+        const parts = dateString.split('-');
+        let date;
+        if (parts.length === 3) {
+            date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        } else {
+            date = new Date(dateString);
+        }
+
         return new Intl.DateTimeFormat('es-AR', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         }).format(date);
     };
 
