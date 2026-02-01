@@ -377,13 +377,17 @@ export function useExpenses() {
 
     // --- CALCULATIONS (Same as before) ---
     // Get filtered expenses by date range
-    const getFilteredExpenses = useCallback((filterType, year, month = null, method = 'all', card = 'all', category = 'all') => {
+    const getFilteredExpenses = useCallback((filterType, year, month = null, method = 'all', card = 'all', category = 'all', sharedFilter = 'all') => {
         let filtered = [];
 
         expenses.forEach(expense => {
             if (category !== 'all' && expense.categoria !== category) return;
             if (method !== 'all' && expense.metodo_pago !== method) return;
             if (card !== 'all' && expense.tarjeta_credito !== card) return;
+
+            // Shared filter logic
+            if (sharedFilter === 'shared' && !expense.is_shared) return;
+            if (sharedFilter === 'not_shared' && expense.is_shared) return;
             const startDate = new Date(expense.fecha_inicio);
             const startYear = startDate.getFullYear();
             const startMonth = startDate.getMonth();
@@ -475,12 +479,16 @@ export function useExpenses() {
         return grouped;
     }, []);
 
-    const getMonthlyTotals = useCallback((year, method = 'all', card = 'all', category = 'all') => {
+    const getMonthlyTotals = useCallback((year, method = 'all', card = 'all', category = 'all', sharedFilter = 'all') => {
         const monthlyTotals = Array(12).fill(0);
         expenses.forEach(expense => {
             if (category !== 'all' && expense.categoria !== category) return;
             if (method !== 'all' && expense.metodo_pago !== method) return;
             if (card !== 'all' && expense.tarjeta_credito !== card) return;
+
+            // Shared filter logic
+            if (sharedFilter === 'shared' && !expense.is_shared) return;
+            if (sharedFilter === 'not_shared' && expense.is_shared) return;
 
             const startDate = new Date(expense.fecha_inicio);
             const startYear = startDate.getFullYear();

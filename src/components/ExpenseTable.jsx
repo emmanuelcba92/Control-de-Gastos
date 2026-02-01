@@ -12,6 +12,7 @@ const CATEGORY_LABELS = {
 
 export function ExpenseTable({ expenses, onEdit, onDelete, total, settings = { currency: 'ARS' }, getSalaryPercentage, getStatusColor }) {
     const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [sortConfig, setSortConfig] = useState({ key: 'fecha_gasto', direction: 'desc' });
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('es-AR', {
@@ -42,6 +43,50 @@ export function ExpenseTable({ expenses, onEdit, onDelete, total, settings = { c
         }
     };
 
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const sortedExpenses = [...expenses].sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        // Handle specific fields
+        if (sortConfig.key === 'fecha_gasto') {
+            aValue = new Date(a.fecha_gasto || a.fecha_inicio).getTime();
+            bValue = new Date(b.fecha_gasto || b.fecha_inicio).getTime();
+        }
+
+        // Handle nulls/undefined
+        if (aValue === null || aValue === undefined) aValue = '';
+        if (bValue === null || bValue === undefined) bValue = '';
+
+        // Handle strings (case insensitive)
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+            aValue = aValue.toLowerCase();
+            bValue = bValue.toLowerCase();
+        }
+
+        if (aValue < bValue) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+    });
+
+    const getSortIndicator = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === 'asc' ? ' 🔼' : ' 🔽';
+        }
+        return '';
+    };
+
     const getPaymentMethodEmoji = (method) => {
         const emojis = {
             'Tarjeta de crédito': '💳',
@@ -61,10 +106,10 @@ export function ExpenseTable({ expenses, onEdit, onDelete, total, settings = { c
     const statusColor = getStatusColor ? getStatusColor(salaryPercentage) : 'green';
 
     // Calculate expenses ending this month
-    const expensesEnding = expenses.filter(e => e.cuotas > 1 && e.cuota_actual === e.cuotas);
+    const expensesEnding = sortedExpenses.filter(e => e.cuotas > 1 && e.cuota_actual === e.cuotas);
     const totalEnding = expensesEnding.reduce((sum, e) => sum + e.monto, 0);
 
-    if (expenses.length === 0) {
+    if (sortedExpenses.length === 0) {
         return (
             <div className="glass-card p-12 text-center">
                 <div className="text-6xl mb-4">📭</div>
@@ -121,18 +166,32 @@ export function ExpenseTable({ expenses, onEdit, onDelete, total, settings = { c
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Servicio</th>
-                                <th>Categoría</th>
-                                <th>Monto</th>
-                                <th>Cuotas</th>
-                                <th>Método</th>
-                                <th>Tarjeta</th>
-                                <th>Fecha</th>
+                                <th onClick={() => requestSort('nombre')} className="cursor-pointer hover:bg-[var(--color-bg-tertiary)]">
+                                    Servicio{getSortIndicator('nombre')}
+                                </th>
+                                <th onClick={() => requestSort('categoria')} className="cursor-pointer hover:bg-[var(--color-bg-tertiary)]">
+                                    Categoría{getSortIndicator('categoria')}
+                                </th>
+                                <th onClick={() => requestSort('monto')} className="cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-right">
+                                    Monto{getSortIndicator('monto')}
+                                </th>
+                                <th onClick={() => requestSort('cuotas')} className="cursor-pointer hover:bg-[var(--color-bg-tertiary)]">
+                                    Cuotas{getSortIndicator('cuotas')}
+                                </th>
+                                <th onClick={() => requestSort('metodo_pago')} className="cursor-pointer hover:bg-[var(--color-bg-tertiary)]">
+                                    Método{getSortIndicator('metodo_pago')}
+                                </th>
+                                <th onClick={() => requestSort('tarjeta_credito')} className="cursor-pointer hover:bg-[var(--color-bg-tertiary)]">
+                                    Tarjeta{getSortIndicator('tarjeta_credito')}
+                                </th>
+                                <th onClick={() => requestSort('fecha_gasto')} className="cursor-pointer hover:bg-[var(--color-bg-tertiary)]">
+                                    Fecha{getSortIndicator('fecha_gasto')}
+                                </th>
                                 <th style={{ width: '100px' }}>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {expenses.map((expense) => {
+                            {sortedExpenses.map((expense) => {
                                 const isEnding = expense.cuotas > 1 && expense.cuota_actual === expense.cuotas;
                                 return (
                                     <tr key={expense.id} className={isEnding ? 'bg-emerald-500/10' : ''}>

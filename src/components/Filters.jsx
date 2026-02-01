@@ -11,9 +11,11 @@ export function Filters({
     selectedMethod = 'all',
     selectedCard = 'all',
     selectedCategory = 'all',
+    selectedShared = 'all',
     onMethodChange,
     onCardChange,
-    onCategoryChange
+    onCategoryChange,
+    onSharedChange
 }) {
     const currentYear = new Date().getFullYear();
     // Include 5 future years and 4 past years (total 10)
@@ -132,6 +134,19 @@ export function Filters({
                             ))}
                         </select>
                     )}
+
+                    <div className="h-8 w-px bg-[var(--color-border)] mx-2 hidden sm:block"></div>
+
+                    {/* Shared Filter */}
+                    <select
+                        className="form-input w-full sm:w-auto min-w-[150px]"
+                        value={selectedShared}
+                        onChange={(e) => onSharedChange(e.target.value)}
+                    >
+                        <option value="all">👥 Todos los gastos</option>
+                        <option value="shared">🤝 Solo compartidos</option>
+                        <option value="not_shared">👤 Solo individuales</option>
+                    </select>
                 </div>
             </div>
         </div>

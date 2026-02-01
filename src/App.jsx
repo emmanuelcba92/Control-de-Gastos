@@ -20,6 +20,7 @@ function App() {
   const [filterMethod, setFilterMethod] = useState('all');
   const [filterCard, setFilterCard] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [filterShared, setFilterShared] = useState('all');
 
   const {
     expenses,
@@ -53,14 +54,14 @@ function App() {
 
   // Get filtered expenses based on current filter
   const filteredExpenses = useMemo(() => {
-    return getFilteredExpenses(filterType, selectedYear, selectedMonth, filterMethod, filterCard, filterCategory);
-  }, [expenses, filterType, selectedYear, selectedMonth, filterMethod, filterCard, filterCategory, getFilteredExpenses]);
+    return getFilteredExpenses(filterType, selectedYear, selectedMonth, filterMethod, filterCard, filterCategory, filterShared);
+  }, [expenses, filterType, selectedYear, selectedMonth, filterMethod, filterCard, filterCategory, filterShared, getFilteredExpenses]);
 
   const total = useMemo(() => calculateTotal(filteredExpenses), [filteredExpenses, calculateTotal]);
 
   const monthlyTotals = useMemo(
-    () => getMonthlyTotals(selectedYear, filterMethod, filterCard, filterCategory),
-    [selectedYear, filterMethod, filterCard, filterCategory, getMonthlyTotals]
+    () => getMonthlyTotals(selectedYear, filterMethod, filterCard, filterCategory, filterShared),
+    [selectedYear, filterMethod, filterCard, filterCategory, filterShared, getMonthlyTotals]
   );
 
   const expensesByMethod = useMemo(
@@ -135,12 +136,14 @@ function App() {
               selectedMethod={filterMethod}
               selectedCard={filterCard}
               selectedCategory={filterCategory}
+              selectedShared={filterShared}
               onFilterTypeChange={setFilterType}
               onYearChange={setSelectedYear}
               onMonthChange={setSelectedMonth}
               onMethodChange={setFilterMethod}
               onCardChange={setFilterCard}
               onCategoryChange={setFilterCategory}
+              onSharedChange={setFilterShared}
             />
           </div>
           {activeTab === 'gastos' && (
